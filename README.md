@@ -1,14 +1,29 @@
-# Welcome to your CDK TypeScript project
+# Shop Backend
 
-This is a blank project for CDK development with TypeScript.
+This is AWS CDK backend starter project for nodejs-aws mentoring program. This monorepository is used as backend part of the [nodejs-aws-shop-react](https://github.com/CarphatianSnake/nodejs-aws-shop-react) project.
 
-The `cdk.json` file tells the CDK Toolkit how to execute your app.
+## Available Scripts
 
-## Useful commands
+### `build`
 
-* `npm run build`   compile typescript to js
-* `npm run watch`   watch for changes and compile
-* `npm run test`    perform the jest unit tests
-* `npx cdk deploy`  deploy this stack to your default AWS account/region
-* `npx cdk diff`    compare deployed stack with current state
-* `npx cdk synth`   emits the synthesized CloudFormation template
+Compiles project from TypeScript to JavaScript.
+
+### `watch`
+
+Watches for changes and compile.
+
+### `test`
+
+Runs tests in console.
+
+### `deploy`
+
+Runs stack deployment to AWS.
+
+### `destroy`
+
+Destroys stack on AWS.
+
+### `build:deploy`
+
+Compiles project and deploys it to AWS.
