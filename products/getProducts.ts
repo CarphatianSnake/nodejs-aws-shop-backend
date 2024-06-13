@@ -1,4 +1,4 @@
-import { products } from './utils/products';
+import { products } from './mock/products';
 import prepareResponse from './utils/prepareResponse';
 
 export const handler = async () => {
