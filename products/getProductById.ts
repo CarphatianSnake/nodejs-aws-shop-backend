@@ -10,7 +10,7 @@ export const handler = async (event: APIGatewayProxyEvent) => {
     const product = products.find((product) => product.id === params.productId);
 
     if (product) {
-      return prepareResponse(200, { data: product });
+      return prepareResponse(200, product);
     }
 
     return prepareResponse(404, { message: 'Product not found' });

@@ -4,11 +4,7 @@ type ErrorMessage = {
   message: string;
 };
 
-type ReponseData = {
-  data: Product | Product[];
-}
-
-type IBody = ErrorMessage | ReponseData;
+type IBody = ErrorMessage | Product | Product[];
 
 const prepareResponse = (statusCode: number, body: IBody) => {
   return {
