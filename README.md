@@ -12,9 +12,9 @@ Compiles project from TypeScript to JavaScript.
 
 Watches for changes and compile.
 
-### `test`
+### `test`, `test:coverage`
 
-Runs tests in console.
+Runs tests in console or with coverage.
 
 ### `deploy`
 
