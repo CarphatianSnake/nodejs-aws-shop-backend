@@ -1,4 +1,4 @@
-import type { Product } from "../mock/products";
+import type { Product } from "./products";
 
 type ErrorMessage = {
   message: string;

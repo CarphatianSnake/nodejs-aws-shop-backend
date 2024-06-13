@@ -4,6 +4,7 @@
 node_modules
 .env
 coverage
+dist
 
 # CDK asset staging directory
 .cdk.staging

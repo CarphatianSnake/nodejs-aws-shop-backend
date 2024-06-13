@@ -11,14 +11,14 @@ export class ShopBackendStack extends cdk.Stack {
 
     const getProducts = new NodejsFunction(this, 'GetProductsHandler', {
       runtime: lambda.Runtime.NODEJS_20_X,
-      code: lambda.Code.fromAsset('products'),
-      handler: 'getProducts.handler',
+      code: lambda.Code.fromAsset('dist/products/getProducts'),
+      handler: 'index.handler',
     });
 
     const getProductById = new NodejsFunction(this, 'GetProductByIdHandler', {
       runtime: lambda.Runtime.NODEJS_20_X,
-      code: lambda.Code.fromAsset('products'),
-      handler: 'getProductById.handler',
+      code: lambda.Code.fromAsset('dist/products/getProductById'),
+      handler: 'index.handler',
     });
 
     const productsApi = new apigw.HttpApi(this, 'ProductsHttpApi', {

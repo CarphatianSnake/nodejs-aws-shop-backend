@@ -1,7 +1,7 @@
 import type { APIGatewayProxyEvent } from 'aws-lambda';
 
-import { products } from './mock/products';
-import prepareResponse from './utils/prepareResponse';
+import { products } from './products';
+import prepareResponse from './prepareResponse';
 
 export const handler = async (event: APIGatewayProxyEvent) => {
   const params = event.pathParameters;

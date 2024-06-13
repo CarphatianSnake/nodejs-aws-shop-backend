@@ -1,4 +1,4 @@
-import { products } from "@/products/mock/products";
+import { products } from "../mock/products";
 import { handler } from "@/products/getProducts";
 
 it("Should return equal products array", async () => {

@@ -1,4 +1,8 @@
 {
+  "compilerOptions": {
+    "outDir": "dist",
+    "allowJs": true
+  },
   "extends": "./tsconfig.json",
-  "exclude": ["**/*.test.ts"]
+  "exclude": ["node_modules", "test", "cdk.out", "coverage", "*.js", "dist"]
 }
