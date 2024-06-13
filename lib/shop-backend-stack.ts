@@ -21,7 +21,12 @@ export class ShopBackendStack extends cdk.Stack {
       handler: 'getProductById.handler',
     });
 
-    const productsApi = new apigw.HttpApi(this, 'ProductsHttpApi');
+    const productsApi = new apigw.HttpApi(this, 'ProductsHttpApi', {
+      corsPreflight: {
+        allowOrigins: ['*'],
+        allowMethods: [apigw.CorsHttpMethod.GET],
+      },
+    });
 
     const getProductsIntegration = new HttpLambdaIntegration('GetProductsIntegration', getProducts);
     const getProductByIdIntegration = new HttpLambdaIntegration('GetProductByIdIntegration', getProductById);
