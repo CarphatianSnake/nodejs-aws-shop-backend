@@ -1,49 +1,41 @@
-import { AttributeValue, DynamoDBClient, BatchWriteItemCommand } from "@aws-sdk/client-dynamodb";
+import { DynamoDBClient, BatchWriteItemCommand } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import { marshall } from "@aws-sdk/util-dynamodb";
-import { products } from "../test/mock/products";
+import { products as productsData } from "../test/mock/products";
+import type { Stock, PutRequestObject } from "../types";
 
-type Stock = {
-  product_id: string;
-  count: number;
-};
-
-type PutRequestObject = {
-  PutRequest: {
-    Item: Record<string, AttributeValue>;
-  };
-}
-
-const client = new DynamoDBClient({ region: process.env.AWS_REGION });
-const documentClient = DynamoDBDocumentClient.from(client);
-
-const generatePutRequests = <T>(items: T[], tableName: string): PutRequestObject[] => {
-  return items.map((item) => {
-    return {
-      PutRequest: {
-        Item: marshall({
-          ...item
-        })
-      }
+const generatePutRequests = <T>(items: T[]): PutRequestObject[] =>
+  items.map((item) => ({
+    PutRequest: {
+      Item: marshall({
+        ...item
+      })
     }
-  });
-};
-
-const fillTables = async () => {
-  const stocks: Stock[] = products.map((product) => ({
-    product_id: product.id,
-    count: Math.floor(Math.random() * 10) + 1,
   }));
 
-  const batchWriteCommand = new BatchWriteItemCommand({
-    RequestItems: {
-      'products': generatePutRequests(products, 'products'),
-      'stocks': generatePutRequests(stocks, 'stocks')
-    }
-  });
+const generateStocks = (): Stock[] => productsData.map((product) => ({
+  product_id: product.id,
+  count: Math.floor(Math.random() * 10) + 1,
+}));
 
+const fillTables = async () => {
   try {
+    const client = new DynamoDBClient({ region: process.env.AWS_REGION });
+    const documentClient = DynamoDBDocumentClient.from(client);
+
+    const stocksData = generateStocks();
+    const stocks = generatePutRequests(stocksData);
+    const products = generatePutRequests(productsData);
+
+    const batchWriteCommand = new BatchWriteItemCommand({
+      RequestItems: {
+        products,
+        stocks
+      }
+    });
+
     const response = await documentClient.send(batchWriteCommand);
+
     console.log('\nResponse:', response, '\n\nTables successfully filled!\n');
   } catch (error) {
     console.error('Error:', error);
