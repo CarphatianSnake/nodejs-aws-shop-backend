@@ -23,7 +23,3 @@ Runs stack deployment to AWS.
 ### `destroy`
 
 Destroys stack on AWS.
-
-### `build:deploy`
-
-Compiles project and deploys it to AWS.
