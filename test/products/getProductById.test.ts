@@ -1,27 +1,29 @@
-import { APIGatewayProxyEvent } from "aws-lambda";
-import { products } from "../mock/products";
 import { handler } from "@/products/getProductById";
+import { products } from "../mock/products";
+import { httpEventMock } from "../mock/httpEventMock";
+import type { HttpEventRequest, ProductPathParams } from "@/types";
 
-let mockedEvent: APIGatewayProxyEvent;
+const defaultEvent: HttpEventRequest<ProductPathParams> = {
+  ...httpEventMock
+} as any;
 
 beforeEach(() => {
-  mockedEvent = {} as unknown as APIGatewayProxyEvent;
+  defaultEvent.pathParameters = {};
 })
 
 it("Should return correct product by id", async () => {
-  mockedEvent.pathParameters = { productId: products[0].id };
-  const result = await handler(mockedEvent);
+  defaultEvent.pathParameters = { productId: products[0].id };
+  const result = await handler(defaultEvent);
   expect(JSON.parse(result.body)).toStrictEqual(products[0]);
 });
 
 it('Should return statusCode 404', async () => {
-  mockedEvent.pathParameters = { productId: '123' };
-  const result = await handler(mockedEvent);
+  defaultEvent.pathParameters = { productId: '123' };
+  const result = await handler(defaultEvent);
   expect(result.statusCode).toEqual(404);
 });
 
 it('Should return statusCode 400', async () => {
-  mockedEvent.pathParameters = {};
-  const result = await handler(mockedEvent);
+  const result = await handler(defaultEvent);
   expect(result.statusCode).toEqual(400);
 });

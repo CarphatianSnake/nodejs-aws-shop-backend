@@ -1,13 +1,12 @@
-import type { APIGatewayProxyEvent } from 'aws-lambda';
-
 import { products } from './products';
 import prepareResponse from './prepareResponse';
+import type { HttpEventRequest, HttpResponse, ProductPathParams } from '@/types';
 
-export const handler = async (event: APIGatewayProxyEvent) => {
-  const params = event.pathParameters;
+export const handler = async (event: HttpEventRequest<ProductPathParams>): HttpResponse => {
+  const { productId } = event.pathParameters;
 
-  if (params?.productId) {
-    const product = products.find((product) => product.id === params.productId);
+  if (productId) {
+    const product = products.find((product) => product.id === productId);
 
     if (product) {
       return prepareResponse(200, product);

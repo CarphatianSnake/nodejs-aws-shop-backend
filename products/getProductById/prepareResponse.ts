@@ -1,12 +1,6 @@
-import type { Product } from "./products";
+import type { HttpResponseBody } from "@/types";
 
-type ErrorMessage = {
-  message: string;
-};
-
-type IBody = ErrorMessage | Product | Product[];
-
-const prepareResponse = (statusCode: number, body: IBody) => {
+const prepareResponse = (statusCode: number, body: HttpResponseBody) => {
   return {
     statusCode,
     headers: {

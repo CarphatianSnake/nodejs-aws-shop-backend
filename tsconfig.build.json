@@ -4,5 +4,13 @@
     "allowJs": true
   },
   "extends": "./tsconfig.json",
-  "exclude": ["node_modules", "test", "cdk.out", "coverage", "*.js", "dist"]
+  "exclude": [
+    "node_modules",
+    "test",
+    "cdk.out",
+    "coverage",
+    "*.js",
+    "dist",
+    "types"
+  ]
 }
