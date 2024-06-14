@@ -11,19 +11,21 @@ beforeEach(() => {
   defaultEvent.pathParameters = {};
 })
 
-it("Should return correct product by id", async () => {
-  defaultEvent.pathParameters = { productId: products[0].id };
-  const result = await handler(defaultEvent);
-  expect(JSON.parse(result.body)).toStrictEqual(products[0]);
-});
+describe('getProductById handler', () => {
+  it("Should return correct product by id", async () => {
+    defaultEvent.pathParameters = { productId: products[0].id };
+    const result = await handler(defaultEvent);
+    expect(JSON.parse(result.body)).toStrictEqual(products[0]);
+  });
 
-it('Should return statusCode 404', async () => {
-  defaultEvent.pathParameters = { productId: '123' };
-  const result = await handler(defaultEvent);
-  expect(result.statusCode).toEqual(404);
-});
+  it('Should return statusCode 404', async () => {
+    defaultEvent.pathParameters = { productId: '123' };
+    const result = await handler(defaultEvent);
+    expect(result.statusCode).toEqual(404);
+  });
 
-it('Should return statusCode 400', async () => {
-  const result = await handler(defaultEvent);
-  expect(result.statusCode).toEqual(400);
-});
+  it('Should return statusCode 400', async () => {
+    const result = await handler(defaultEvent);
+    expect(result.statusCode).toEqual(400);
+  });
+})
