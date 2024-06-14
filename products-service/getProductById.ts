@@ -1,5 +1,4 @@
-import { products } from './products';
-import prepareResponse from './prepareResponse';
+import { prepareResponse, products } from '/opt/utils';
 import type { HttpEventRequest, HttpResponse, ProductPathParams } from '@/types';
 
 export const handler = async (event: HttpEventRequest<ProductPathParams>): HttpResponse => {

@@ -9,18 +9,30 @@ export class ShopBackendStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
+    // Create lambda layer
+    const lambdaLayer = new lambda.LayerVersion(this, 'LambdaLayer', {
+      code: lambda.Code.fromAsset('lambda-layer'),
+      compatibleRuntimes: [lambda.Runtime.NODEJS_20_X],
+    });
+
+    // Create lambda functions
     const getProducts = new NodejsFunction(this, 'GetProductsHandler', {
       runtime: lambda.Runtime.NODEJS_20_X,
-      code: lambda.Code.fromAsset('dist/products/getProducts'),
-      handler: 'index.handler',
+      entry: 'products-service/getProductsList.ts',
+      layers: [lambdaLayer],
     });
 
     const getProductById = new NodejsFunction(this, 'GetProductByIdHandler', {
       runtime: lambda.Runtime.NODEJS_20_X,
-      code: lambda.Code.fromAsset('dist/products/getProductById'),
-      handler: 'index.handler',
+      entry: 'products-service/getProductById.ts',
+      layers: [lambdaLayer],
     });
 
+    // Create products service integrations
+    const getProductsIntegration = new HttpLambdaIntegration('GetProductsIntegration', getProducts);
+    const getProductByIdIntegration = new HttpLambdaIntegration('GetProductByIdIntegration', getProductById);
+
+    // Create products service API
     const productsApi = new apigw.HttpApi(this, 'ProductsHttpApi', {
       corsPreflight: {
         allowOrigins: ['*'],
@@ -28,9 +40,7 @@ export class ShopBackendStack extends cdk.Stack {
       },
     });
 
-    const getProductsIntegration = new HttpLambdaIntegration('GetProductsIntegration', getProducts);
-    const getProductByIdIntegration = new HttpLambdaIntegration('GetProductByIdIntegration', getProductById);
-
+    // Add routes to products service API endpoint
     productsApi.addRoutes({
       path: '/products',
       methods: [apigw.HttpMethod.GET],

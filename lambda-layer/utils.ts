@@ -1,4 +1,14 @@
-import type { Product } from "@/types";
+import type { HttpResponseBody, Product } from "@/types";
+
+export const prepareResponse = (statusCode: number, body: HttpResponseBody) => {
+  return {
+    statusCode,
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  };
+};
 
 export const products: Product[] = [
   {
@@ -38,3 +48,5 @@ export const products: Product[] = [
     title: "ProductName",
   },
 ];
+
+export const getProductsList = () => products;

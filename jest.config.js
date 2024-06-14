@@ -6,5 +6,6 @@ module.exports = {
   },
   moduleNameMapper: {
     "^@/products(.*)$": "<rootDir>/products$1",
+    "^/opt(.*)$": "<rootDir>/lambda-layer$1",
   },
 };

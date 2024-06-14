@@ -3,9 +3,7 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["*"],
-      "@test/*": ["test/*"],
-      "@products/*": ["products/*"],
-      "@lib/*": ["lib/*"]
+      "/opt/*": ["lambda-layer/*"]
     },
     "target": "ES2020",
     "module": "commonjs",
