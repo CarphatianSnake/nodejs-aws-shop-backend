@@ -43,13 +43,10 @@ const getProductsList = async () => {
 
     const batchResult = await documentClient.send(batchCommand);
 
-    if (!batchResult.Responses) {
-      throw new CustomError('Stocks not found!', 404);
-    }
+    const { Responses } = batchResult;
+    const { stocks } = Responses || {};
 
-    const { stocks } = batchResult.Responses;
-
-    if (!stocks || !stocks.length) {
+    if (!Responses || !stocks || !stocks.length) {
       throw new CustomError('Stocks not found!', 404);
     }
 
