@@ -1,5 +1,5 @@
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient, BatchGetCommand } from "@aws-sdk/lib-dynamodb";
+import { DynamoDBDocumentClient, BatchGetCommand, BatchGetCommandInput } from "@aws-sdk/lib-dynamodb";
 
 import { CustomError } from "./CustomError";
 
@@ -8,27 +8,35 @@ const documentClient = DynamoDBDocumentClient.from(client);
 
 const getProductById = async (productId: string) => {
   try {
-    const { Responses } = await documentClient.send(
-      new BatchGetCommand({
-        RequestItems: {
-          products: {
-            Keys: [
-              {
-                id: productId
-              }
-            ]
-          },
-          stocks: {
-            Keys: [
-              {
-                product_id: productId
-              }
-            ],
-            AttributesToGet: ['count']
-          }
+    console.log('\nGet product and stock data by product id:');
+    console.log({ id: productId });
+
+    const commandInput: BatchGetCommandInput = {
+      RequestItems: {
+        products: {
+          Keys: [
+            {
+              id: productId
+            }
+          ]
+        },
+        stocks: {
+          Keys: [
+            {
+              product_id: productId
+            }
+          ],
+          AttributesToGet: ['count']
         }
-      })
-    );
+      }
+    };
+
+    console.log('\nRun batch with input:');
+    console.log(commandInput);
+
+    const command = new BatchGetCommand(commandInput);
+
+    const { Responses } = await documentClient.send(command);
 
     if (!Responses?.products || !Responses?.products.length) {
       throw new CustomError('Product not found!', 404);
@@ -41,7 +49,7 @@ const getProductById = async (productId: string) => {
 
     return product;
   } catch (error: any) {
-    if (error instanceof CustomError) {
+    if (error instanceof CustomError && error.statusCode === 404) {
       throw error;
     }
     throw new CustomError('Something went wrong', 500);
@@ -49,5 +57,8 @@ const getProductById = async (productId: string) => {
 };
 
 getProductById('7567ec4b-b10c-48c5-9345-fc73348a80a1')
-  .then((product) => console.log(product))
+  .then((product) => {
+    console.log('\nResult:');
+    console.log(product);
+  })
   .catch((error) => console.error(error));
