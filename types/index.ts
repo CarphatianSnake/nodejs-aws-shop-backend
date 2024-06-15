@@ -1,7 +1,7 @@
 import type { AttributeValue } from "@aws-sdk/client-dynamodb";
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 
-export type CustomError = {
+type HttpErrorMessage = {
   message: string;
 };
 
@@ -12,7 +12,7 @@ export type Product = {
   title: string;
 };
 
-export type HttpResponseBody = CustomError | Product | Product[];
+export type HttpResponseBody = HttpErrorMessage | Product | Product[];
 
 export type HttpEventRequest<T = null> = Omit<APIGatewayProxyEvent, 'pathParameters'> & {
   pathParameters: T
