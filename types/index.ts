@@ -1,4 +1,3 @@
-import type { AttributeValue } from "@aws-sdk/client-dynamodb";
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 
 type HttpErrorMessage = {
@@ -23,14 +22,3 @@ export type ProductPathParams = {
 };
 
 export type HttpResponse = Promise<APIGatewayProxyResult>;
-
-export type Stock = {
-  product_id: string;
-  count: number;
-};
-
-export type PutRequestObject = {
-  PutRequest: {
-    Item: Record<string, AttributeValue>;
-  };
-}
