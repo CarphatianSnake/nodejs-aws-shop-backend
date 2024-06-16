@@ -9,6 +9,8 @@ describe('getProductById', () => {
 
   beforeEach(() => {
     ddbMock.reset();
+    jest.spyOn(console, 'log').mockImplementation(() => { });
+    jest.spyOn(console, 'error').mockImplementation(() => { });
   });
 
   it('Should return the product with the given ID', async () => {

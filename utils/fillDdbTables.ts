@@ -1,31 +1,20 @@
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, TransactWriteCommand, TransactWriteCommandInput } from "@aws-sdk/lib-dynamodb";
-import { products as productsData } from "../test/mock/products";
-
-const genetateTransactions = <T>(items: T[], tableName: string) => {
-  return items.map((item) => {
-    return {
-      Put: {
-        TableName: tableName,
-        Item: item
-      }
-    }
-  })
-};
+import { generateStocksData } from "./generateStocksData";
+import { generatePutTransact } from "./generatePutTransact";
+import { products } from "@/test/mock/products";
+import { TableNames } from "@/types";
 
 export const fillDdbTables = async () => {
   const client = new DynamoDBClient({ region: process.env.AWS_REGION });
   const documentClient = DynamoDBDocumentClient.from(client);
 
-  const stocksData = productsData.map((product) => ({
-    product_id: product.id,
-    count: Math.floor(Math.random() * 10) + 1,
-  }));
+  const stocks = generateStocksData();
 
   const transactInput: TransactWriteCommandInput = {
     TransactItems: [
-      ...genetateTransactions(productsData, 'products'),
-      ...genetateTransactions(stocksData, 'stocks'),
+      ...products.map((item) => generatePutTransact(item, TableNames.Products)),
+      ...stocks.map((item) => generatePutTransact(item, TableNames.Stocks)),
     ]
   };
 
@@ -39,11 +28,7 @@ export const fillDdbTables = async () => {
     console.log('\nResponse:');
     console.log(response);
     console.log('\nTables successfully filled!\n');
-
-    return 'Success';
   } catch (error) {
     console.log(error);
-
-    return 'Fail';
   }
 };

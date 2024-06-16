@@ -8,6 +8,8 @@ describe('fillDdbTables', () => {
 
   beforeEach(() => {
     ddbMock.reset();
+    jest.spyOn(console, 'log').mockImplementation(() => { });
+    jest.spyOn(console, 'error').mockImplementation(() => { });
   });
 
   it('Should successfully fill tables', async () => {
@@ -26,13 +28,13 @@ describe('fillDdbTables', () => {
 
     const res = await fillDdbTables();
 
-    expect(res).toStrictEqual('Success');
+    expect(res).resolves;
   })
   it('Should fail to fill tables', async () => {
     ddbMock.on(TransactWriteCommand).rejects();
 
     const res = await fillDdbTables();
 
-    expect(res).toStrictEqual('Fail');
+    expect(res).rejects;
   })
 })

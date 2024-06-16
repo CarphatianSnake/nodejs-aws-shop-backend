@@ -1,3 +1,3 @@
-import { fillDdbTables } from "../utils/fillDdbTables";
+import { fillDdbTables } from "@/utils/fillDdbTables";
 
 fillDdbTables();
