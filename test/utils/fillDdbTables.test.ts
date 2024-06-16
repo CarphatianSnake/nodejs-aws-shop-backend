@@ -2,6 +2,7 @@ import { mockClient } from "aws-sdk-client-mock";
 import { DynamoDBDocumentClient, TransactWriteCommand } from "@aws-sdk/lib-dynamodb";
 
 import { fillDdbTables } from "@/utils/fillDdbTables";
+import { response } from "../mock/response";
 
 describe('fillDdbTables', () => {
   const ddbMock = mockClient(DynamoDBDocumentClient);
@@ -13,17 +14,6 @@ describe('fillDdbTables', () => {
   });
 
   it('Should successfully fill tables', async () => {
-    const response = {
-      '$metadata': {
-        httpStatusCode: 200,
-        requestId: 'MECVSND77T6GNRHEDB4UJ36L07VV4KQNSO5AEMVJF66Q9ASUAAJG',
-        extendedRequestId: undefined,
-        cfId: undefined,
-        attempts: 1,
-        totalRetryDelay: 0
-      }
-    };
-
     ddbMock.on(TransactWriteCommand).resolves(response);
 
     const res = await fillDdbTables();
