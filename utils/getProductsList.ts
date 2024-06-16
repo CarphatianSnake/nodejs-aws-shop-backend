@@ -6,7 +6,7 @@ import { CustomError } from "./CustomError";
 const client = new DynamoDBClient({ region: process.env.AWS_REGION });
 const documentClient = DynamoDBDocumentClient.from(client);
 
-const getProductsList = async () => {
+export const getProductsList = async () => {
   try {
     console.log('\nGet products list');
 
@@ -44,14 +44,13 @@ const getProductsList = async () => {
     const batchResult = await documentClient.send(batchCommand);
 
     const { Responses } = batchResult;
-    const { stocks } = Responses || {};
 
-    if (!Responses || !stocks || !stocks.length) {
+    if (!Responses || !Responses.stocks || !Responses.stocks.length) {
       throw new CustomError('Stocks not found!', 404);
     }
 
     const productsList = Items.map((prod) => {
-      const stock = stocks.find((stock) => stock.product_id === prod.id);
+      const stock = Responses.stocks.find((stock) => stock.product_id === prod.id);
 
       return {
         ...prod,
@@ -64,13 +63,13 @@ const getProductsList = async () => {
     if (error instanceof CustomError && error.statusCode === 404) {
       throw error;
     }
-    throw new CustomError('Something went wrong', 500);
+    throw new CustomError('Something went wrong!', 500);
   }
 };
 
-getProductsList()
-  .then((data) => {
-    console.log('\nResult:');
-    console.log(data);
-  })
-  .catch((error) => console.error(error));
+// getProductsList()
+//   .then((data) => {
+//     console.log('\nResult:');
+//     console.log(data);
+//   })
+//   .catch((error) => console.error(error));

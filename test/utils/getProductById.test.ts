@@ -29,7 +29,7 @@ describe('getProductById', () => {
     expect(result).toEqual({ ...product, ...stock });
   });
 
-  it('Should return error 404 PRODUCT not found error with the given ID', async () => {
+  it('Should return error 404 PRODUCT not found with the given ID', async () => {
     const productId = '1';
 
     ddbMock.on(BatchGetCommand).resolves({
@@ -45,7 +45,7 @@ describe('getProductById', () => {
     expect(getProductById(productId)).rejects.toHaveProperty('message', 'Product not found!');
   });
 
-  it('Should return error 404 STOCK not found error with the given ID', async () => {
+  it('Should return error 404 STOCK not found with the given ID', async () => {
     const productId = '1';
 
     ddbMock.on(BatchGetCommand).resolves({
@@ -61,7 +61,7 @@ describe('getProductById', () => {
     expect(getProductById(productId)).rejects.toHaveProperty('message', 'Stock not found!');
   });
 
-  it('Should return error 500 error with the given ID', async () => {
+  it('Should return error 500 with the given ID', async () => {
     const productId = '1';
 
     ddbMock.on(BatchGetCommand).rejects();
