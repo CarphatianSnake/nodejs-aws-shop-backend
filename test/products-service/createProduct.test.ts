@@ -66,6 +66,14 @@ describe('createProduct', () => {
     expect(result).toHaveProperty('statusCode', 400);
   })
 
+  it('Should return error 400 on no data body', async () => {
+    ddbMock.on(TransactWriteCommand).resolves(response);
+
+    const result = await handler(defaultEvent);
+
+    expect(result).toHaveProperty('statusCode', 400);
+  })
+
   it('Should return error 500 on any error except invalid product data', async () => {
     ddbMock.on(TransactWriteCommand).rejects();
 

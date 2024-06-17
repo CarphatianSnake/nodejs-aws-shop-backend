@@ -8,16 +8,18 @@ import { v4 as uuidv4 } from 'uuid';
 import { prepareResponse, generatePutTransact, CustomError, CreateProductDataSchema } from '/opt/utils';
 
 export const handler = async ({ body }: APIGatewayProxyEvent): HttpResponse => {
-  if (!body) {
-    throw new CustomError('Invalid product data!', 400);
-  }
-
-  const data = JSON.parse(body);
-
   const client = new DynamoDBClient({ region: process.env.AWS_REGION });
   const documentClient = DynamoDBDocumentClient.from(client);
 
   try {
+    console.log('Check is data exists...');
+
+    if (!body) {
+      throw new CustomError('Invalid product data!', 400);
+    }
+
+    const data = JSON.parse(body);
+
     console.log('Validate data...');
     console.log(data);
 
@@ -63,10 +65,15 @@ export const handler = async ({ body }: APIGatewayProxyEvent): HttpResponse => {
 
     return prepareResponse(201, { message: `Product with id=${product.id} created!` });
   } catch (error) {
-    console.log(error);
-    if (error instanceof Error && error.hasOwnProperty('issues')) {
+    console.log(error)
+
+    const isCustomError = error instanceof CustomError;
+    const isZodError = error instanceof Error && error.hasOwnProperty('issues');
+
+    if (isCustomError || isZodError) {
       return prepareResponse(400, { message: 'Invalid product data!' });
     }
+
     return prepareResponse(500, { message: 'Something went wrong!' });
   }
 };
