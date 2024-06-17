@@ -1,14 +1,20 @@
 import { mockClient } from "aws-sdk-client-mock";
 import { DynamoDBDocumentClient, TransactWriteCommand } from "@aws-sdk/lib-dynamodb";
 
-import { createProduct } from "@/utils/createProduct";
-import { CustomError } from "@/utils/CustomError";
+import { handler } from "@/products-service/createProduct";
 import { response } from "../mock/response";
+import { httpEventMock } from "../mock/httpEventMock";
+import type { HttpEventRequest } from "@/types";
 
 describe('createProduct', () => {
   const ddbMock = mockClient(DynamoDBDocumentClient);
 
+  const defaultEvent: HttpEventRequest = {
+    ...httpEventMock
+  } as any;
+
   beforeEach(() => {
+    defaultEvent.body = null;
     ddbMock.reset();
     jest.spyOn(console, 'log').mockImplementation(() => { });
     jest.spyOn(console, 'error').mockImplementation(() => { });
@@ -22,11 +28,13 @@ describe('createProduct', () => {
       count: 4,
     };
 
+    defaultEvent.body = JSON.stringify(product);
+
     ddbMock.on(TransactWriteCommand).resolves(response);
 
-    const result = await createProduct(product);
+    const result = await handler(defaultEvent);
 
-    expect(result).resolves;
+    expect(JSON.parse(result.body)).resolves;
   })
 
   it('Should successfully add product with partial data to database', async () => {
@@ -34,32 +42,28 @@ describe('createProduct', () => {
       title: 'Test Title',
     };
 
+    defaultEvent.body = JSON.stringify(product);
+
     ddbMock.on(TransactWriteCommand).resolves(response);
 
-    const result = await createProduct(product);
+    const result = await handler(defaultEvent);
 
-    expect(result).resolves;
+    expect(JSON.parse(result.body)).resolves;
   })
 
   it('Should return error 400 on invalid product data', async () => {
     ddbMock.on(TransactWriteCommand).resolves(response);
 
-    const product1 = {
+    const product = {
       title: 'Test Title',
       price: -100,
     };
 
-    const result1 = createProduct(product1)
+    defaultEvent.body = JSON.stringify(product);
 
-    expect(result1).rejects.toThrow();
-    expect(result1).rejects.toBeInstanceOf(CustomError);
-    expect(result1).rejects.toHaveProperty('statusCode', 400);
+    const result = await handler(defaultEvent);
 
-    const product2 = {
-      title: 'Test Title',
-      description: true,
-      price: 100,
-    };
+    expect(result).toHaveProperty('statusCode', 400);
   })
 
   it('Should return error 500 on any error except invalid product data', async () => {
@@ -72,10 +76,10 @@ describe('createProduct', () => {
       count: 4,
     };
 
-    const result = createProduct(product);
+    defaultEvent.body = JSON.stringify(product);
 
-    expect(result).rejects.toThrow();
-    expect(result).rejects.toBeInstanceOf(CustomError);
-    expect(result).rejects.toHaveProperty('statusCode', 500);
+    const result = await handler(defaultEvent);
+
+    expect(result).toHaveProperty('statusCode', 500);
   })
 })

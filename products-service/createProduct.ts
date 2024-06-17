@@ -4,7 +4,6 @@ import { DynamoDBDocumentClient, TransactWriteCommand, TransactWriteCommandInput
 import type { APIGatewayProxyEvent } from 'aws-lambda';
 import { TableNames, type HttpResponse } from '@/types';
 
-import { ZodError } from 'zod';
 import { v4 as uuidv4 } from 'uuid';
 import { prepareResponse, generatePutTransact, CustomError, CreateProductDataSchema } from '/opt/utils';
 
@@ -21,9 +20,10 @@ export const handler = async ({ body }: APIGatewayProxyEvent): HttpResponse => {
   try {
     console.log('Validate data...');
     console.log(data);
+
     const { title, description, price, count } = CreateProductDataSchema.required().parse(data);
 
-    console.log('Validated data:', { title, description, price, count })
+    console.log('Validated data:', { title, description, price, count });
 
     const product = {
       id: uuidv4(),
@@ -63,7 +63,8 @@ export const handler = async ({ body }: APIGatewayProxyEvent): HttpResponse => {
 
     return prepareResponse(201, { message: `Product with id=${product.id} created!` });
   } catch (error) {
-    if (error instanceof ZodError) {
+    console.log(error);
+    if (error instanceof Error && error.hasOwnProperty('issues')) {
       return prepareResponse(400, { message: 'Invalid product data!' });
     }
     return prepareResponse(500, { message: 'Something went wrong!' });

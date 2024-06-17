@@ -1,6 +1,7 @@
 import * as cdk from 'aws-cdk-lib';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as apigw from 'aws-cdk-lib/aws-apigatewayv2';
+import * as iam from 'aws-cdk-lib/aws-iam';
 import { HttpLambdaIntegration } from 'aws-cdk-lib/aws-apigatewayv2-integrations';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { Construct } from 'constructs';
@@ -28,26 +29,44 @@ export class ShopBackendStack extends cdk.Stack {
       layers: [lambdaLayer],
     });
 
-    // const createProduct = new NodejsFunction(this, 'CreateProductHandler', {
-    //   runtime: lambda.Runtime.NODEJS_20_X,
-    //   entry: 'products-service/createProduct.ts',
-    //   layers: [lambdaLayer],
-    // })
+    const createProduct = new NodejsFunction(this, 'CreateProductHandler', {
+      runtime: lambda.Runtime.NODEJS_20_X,
+      entry: 'products-service/createProduct.ts',
+      layers: [lambdaLayer],
+      initialPolicy: [new iam.PolicyStatement({
+        actions: ['dynamodb:PutItem'],
+        resources: ['*'],
+      })]
+    });
+
+    const cors = new NodejsFunction(this, 'CORS', {
+      runtime: lambda.Runtime.NODEJS_20_X,
+      entry: 'products-service/cors.ts',
+    })
 
     // Create products service integrations
     const getProductsIntegration = new HttpLambdaIntegration('GetProductsIntegration', getProducts);
     const getProductByIdIntegration = new HttpLambdaIntegration('GetProductByIdIntegration', getProductById);
-    // const createProductIntegration = new HttpLambdaIntegration('CreateProductIntegration', createProduct);
+    const createProductIntegration = new HttpLambdaIntegration('CreateProductIntegration', createProduct);
+    const corsIntegration = new HttpLambdaIntegration('CORsIntegration', cors);
 
     // Create products service API
-    const productsApi = new apigw.HttpApi(this, 'ProductsHttpApi', {
-      corsPreflight: {
-        allowOrigins: ['*'],
-        allowMethods: [apigw.CorsHttpMethod.GET, apigw.CorsHttpMethod.POST],
-      },
-    });
+    const productsApi = new apigw.HttpApi(this, 'ProductsHttpApi');
+
+    // Create "dev" stage
+    new apigw.HttpStage(this, 'DevStage', {
+      httpApi: productsApi,
+      stageName: 'dev',
+      autoDeploy: true,
+    })
 
     // Add routes to products service API endpoint
+    productsApi.addRoutes({
+      path: '/products',
+      methods: [apigw.HttpMethod.OPTIONS],
+      integration: corsIntegration,
+    });
+
     productsApi.addRoutes({
       path: '/products',
       methods: [apigw.HttpMethod.GET],
@@ -60,10 +79,10 @@ export class ShopBackendStack extends cdk.Stack {
       integration: getProductByIdIntegration,
     });
 
-    // productsApi.addRoutes({
-    //   path: '/products',
-    //   methods: [apigw.HttpMethod.POST],
-    //   integration: createProductIntegration,
-    // });
+    productsApi.addRoutes({
+      path: '/products',
+      methods: [apigw.HttpMethod.PUT],
+      integration: createProductIntegration,
+    });
   }
 };

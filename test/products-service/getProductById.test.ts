@@ -3,7 +3,7 @@ import { products } from "../mock/products";
 import { httpEventMock } from "../mock/httpEventMock";
 import type { HttpEventRequest, ProductPathParams } from "@/types";
 
-const defaultEvent: HttpEventRequest<ProductPathParams> = {
+const defaultEvent: HttpEventRequest = {
   ...httpEventMock
 } as any;
 

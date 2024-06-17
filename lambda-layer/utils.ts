@@ -6,6 +6,9 @@ export const prepareResponse = (statusCode: number, body: HttpResponseBody) => {
     statusCode,
     headers: {
       "Content-Type": "application/json",
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET,PUT,OPTIONS",
+      "Access-Control-Allow-Headers": "Authorization, Access-Control-Allow-Origin, Access-Control-Allow-Methods, Content-Type",
     },
     body: JSON.stringify(body),
   };
@@ -52,9 +55,9 @@ export const products: Product[] = [
 
 export const getProductsList = () => products;
 
-export function generatePutTransact(item: Product, tableName: TableNames.Products, options?: PutTransactOptions): PutTransact<Product>;
-export function generatePutTransact(item: Stock, tableName: TableNames.Stocks, options?: PutTransactOptions): PutTransact<Stock>;
-export function generatePutTransact(item: Product | Stock, tableName: TableNames, options?: PutTransactOptions) {
+export function generatePutTransact(item: Product, tableName: string, options?: PutTransactOptions): PutTransact<Product>;
+export function generatePutTransact(item: Stock, tableName: string, options?: PutTransactOptions): PutTransact<Stock>;
+export function generatePutTransact(item: Product | Stock, tableName: string, options?: PutTransactOptions) {
   return {
     Put: {
       TableName: tableName,

@@ -20,13 +20,14 @@ export type Stock = {
 
 export type HttpResponseBody = HttpErrorMessage | Product | Product[];
 
-export type HttpEventRequest<T = null> = Omit<APIGatewayProxyEvent, 'pathParameters'> & {
-  pathParameters: T
-}
-
 export type ProductPathParams = {
   productId?: string
 };
+
+export type HttpEventRequest = Omit<APIGatewayProxyEvent, 'pathParameters' | 'body'> & {
+  pathParameters: ProductPathParams;
+  body: string | null;
+}
 
 export type HttpResponse = Promise<APIGatewayProxyResult>;
 

@@ -27,7 +27,7 @@ export const httpEventMock = {
     "X-Forwarded-Proto": "https"
   },
   "queryStringParameters": null,
-  "pathParameters": null,
+  "pathParameters": {},
   "stageVariables": null,
   "requestContext": {
     "path": "/dev/",
@@ -53,6 +53,6 @@ export const httpEventMock = {
     "httpMethod": "POST",
     "apiId": "j3azlsj0c4"
   },
-  "body": "postcode=LS17FR",
+  "body": null,
   "isBase64Encoded": false
 };
