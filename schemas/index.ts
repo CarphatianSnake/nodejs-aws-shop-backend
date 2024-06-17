@@ -1,10 +1,10 @@
 import { z } from 'zod';
 
-export const ProductDataSchema = z.object({
-  title: z.string().optional(),
+export const CreateProductDataSchema = z.object({
+  title: z.string(),
   description: z.string().default('').optional(),
   price: z.number().min(0).default(0).optional(),
   count: z.number().min(0).default(0).optional(),
 });
 
-export type ProductData = z.infer<typeof ProductDataSchema>;
+export type CreateProductData = z.infer<typeof CreateProductDataSchema>;

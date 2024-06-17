@@ -1,4 +1,5 @@
-import type { HttpResponseBody, Product } from "@/types";
+import { z } from 'zod';
+import type { Product, PutTransact, PutTransactOptions, Stock, TableNames, HttpResponseBody } from "@/types";
 
 export const prepareResponse = (statusCode: number, body: HttpResponseBody) => {
   return {
@@ -50,3 +51,32 @@ export const products: Product[] = [
 ];
 
 export const getProductsList = () => products;
+
+export function generatePutTransact(item: Product, tableName: TableNames.Products, options?: PutTransactOptions): PutTransact<Product>;
+export function generatePutTransact(item: Stock, tableName: TableNames.Stocks, options?: PutTransactOptions): PutTransact<Stock>;
+export function generatePutTransact(item: Product | Stock, tableName: TableNames, options?: PutTransactOptions) {
+  return {
+    Put: {
+      TableName: tableName,
+      Item: item,
+      ...options
+    },
+  };
+};
+
+export class CustomError extends Error {
+  statusCode: number;
+  constructor(message: string, statusCode: number) {
+    super(message);
+    this.statusCode = statusCode;
+  }
+}
+
+export const CreateProductDataSchema = z.object({
+  title: z.string(),
+  description: z.string().default('').optional(),
+  price: z.number().min(0).default(0).optional(),
+  count: z.number().min(0).default(0).optional(),
+});
+
+export type CreateProductData = z.infer<typeof CreateProductDataSchema>;

@@ -1,14 +1,20 @@
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient, TransactWriteCommand, TransactWriteCommandInput } from "@aws-sdk/lib-dynamodb";
-import { ZodError } from "zod";
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
+import { DynamoDBDocumentClient, TransactWriteCommand, TransactWriteCommandInput } from '@aws-sdk/lib-dynamodb';
+
+import type { APIGatewayProxyEvent } from 'aws-lambda';
+import { TableNames, type HttpResponse } from '@/types';
+
+import { ZodError } from 'zod';
 import { v4 as uuidv4 } from 'uuid';
+import { prepareResponse, generatePutTransact, CustomError, CreateProductDataSchema } from '/opt/utils';
 
-import { CustomError } from "./CustomError";
-import { CreateProductDataSchema, CreateProductData } from '@/schemas';
-import { generatePutTransact } from "./generatePutTransact";
-import { TableNames } from "@/types";
+export const handler = async ({ body }: APIGatewayProxyEvent): HttpResponse => {
+  if (!body) {
+    throw new CustomError('Invalid product data!', 400);
+  }
 
-export const createProduct = async (data: CreateProductData) => {
+  const data = JSON.parse(body);
+
   const client = new DynamoDBClient({ region: process.env.AWS_REGION });
   const documentClient = DynamoDBDocumentClient.from(client);
 
@@ -46,6 +52,7 @@ export const createProduct = async (data: CreateProductData) => {
         stockTrasact,
       ]
     };
+
     console.log('Run transact...');
 
     const transactWriteCommand = new TransactWriteCommand(transactInput);
@@ -53,14 +60,12 @@ export const createProduct = async (data: CreateProductData) => {
     await documentClient.send(transactWriteCommand);
 
     console.log('\nProduct successfully added!\n');
+
+    return prepareResponse(201, { message: `Product with id=${product.id} created!` });
   } catch (error) {
     if (error instanceof ZodError) {
-      throw new CustomError('Invalid product data!', 400);
+      return prepareResponse(400, { message: 'Invalid product data!' });
     }
-    throw new CustomError('Something went wrong!', 500);
+    return prepareResponse(500, { message: 'Something went wrong!' });
   }
 };
-
-// createProduct({
-//   title: 'Response Test',
-// });

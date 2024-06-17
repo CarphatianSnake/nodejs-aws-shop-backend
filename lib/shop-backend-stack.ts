@@ -28,15 +28,22 @@ export class ShopBackendStack extends cdk.Stack {
       layers: [lambdaLayer],
     });
 
+    // const createProduct = new NodejsFunction(this, 'CreateProductHandler', {
+    //   runtime: lambda.Runtime.NODEJS_20_X,
+    //   entry: 'products-service/createProduct.ts',
+    //   layers: [lambdaLayer],
+    // })
+
     // Create products service integrations
     const getProductsIntegration = new HttpLambdaIntegration('GetProductsIntegration', getProducts);
     const getProductByIdIntegration = new HttpLambdaIntegration('GetProductByIdIntegration', getProductById);
+    // const createProductIntegration = new HttpLambdaIntegration('CreateProductIntegration', createProduct);
 
     // Create products service API
     const productsApi = new apigw.HttpApi(this, 'ProductsHttpApi', {
       corsPreflight: {
         allowOrigins: ['*'],
-        allowMethods: [apigw.CorsHttpMethod.GET],
+        allowMethods: [apigw.CorsHttpMethod.GET, apigw.CorsHttpMethod.POST],
       },
     });
 
@@ -52,5 +59,11 @@ export class ShopBackendStack extends cdk.Stack {
       methods: [apigw.HttpMethod.GET],
       integration: getProductByIdIntegration,
     });
+
+    // productsApi.addRoutes({
+    //   path: '/products',
+    //   methods: [apigw.HttpMethod.POST],
+    //   integration: createProductIntegration,
+    // });
   }
 };
