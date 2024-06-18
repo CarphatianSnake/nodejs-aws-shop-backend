@@ -23,12 +23,7 @@ export class ShopBackendStack extends cdk.Stack {
       stocks: `${DYNAMO_TABLE_ARN}${TableNames.Stocks}`,
     };
 
-    // Create lambda layer
-    // const lambdaLayer = new lambda.LayerVersion(this, 'LambdaLayer', {
-    //   code: lambda.Code.fromAsset('products-service/lambda-layer'),
-    //   compatibleRuntimes: [lambda.Runtime.NODEJS_20_X],
-    // });
-
+    // Create lambda layers
     const utilsLayer = new lambda.LayerVersion(this, 'UtilsLayer', {
       code: lambda.Code.fromAsset('products-service/utils-layer'),
       compatibleRuntimes: [lambda.Runtime.NODEJS_20_X],
