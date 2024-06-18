@@ -23,3 +23,7 @@ Runs stack deployment to AWS.
 ### `destroy`
 
 Destroys stack on AWS.
+
+### `ddb:fill`
+
+Runs script to fill database tables with mocked products data and randomly generated stocks.
