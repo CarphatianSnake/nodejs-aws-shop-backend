@@ -1,4 +1,5 @@
-import type { ProductData } from "/opt/utils-layer/utils";
+import { z } from 'zod';
+import type { ProductSchema } from "/opt/utils";
 import type { Put } from "@aws-sdk/client-dynamodb";
 import type { NativeAttributeValue } from "@aws-sdk/util-dynamodb";
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
@@ -7,19 +8,14 @@ type HttpErrorMessage = {
   message: string;
 };
 
-export type Product = {
-  id: string;
-  description: string;
-  price: number;
-  title: string;
-};
+export type Product = z.infer<typeof ProductSchema>;
 
 export type Stock = {
   product_id: string;
   count: number;
 };
 
-export type HttpResponseBody = HttpErrorMessage | Product | Product[] | ProductData;
+export type HttpResponseBody = HttpErrorMessage | Product[] | Product;
 
 export type ProductPathParams = {
   productId?: string
@@ -29,8 +25,6 @@ export type HttpEventRequest = Omit<APIGatewayProxyEvent, 'pathParameters' | 'bo
   pathParameters: ProductPathParams;
   body: string | null;
 }
-
-export type HttpResponse = Promise<APIGatewayProxyResult>;
 
 export enum TableNames {
   Products = 'products',

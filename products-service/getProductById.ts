@@ -1,7 +1,7 @@
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, BatchExecuteStatementCommand } from "@aws-sdk/lib-dynamodb";
 
-import { CustomError, ProductSchema, prepareResponse } from '/opt/utils-layer/utils';
+import { CustomError, ProductSchema, prepareResponse } from '/opt/utils';
 import type { HttpEventRequest } from '@/types';
 
 import type { APIGatewayProxyResult } from "aws-lambda";

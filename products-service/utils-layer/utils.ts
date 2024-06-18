@@ -57,8 +57,3 @@ export const ProductSchema = z.object({
   price: z.number().min(0).default(0).optional(),
   count: z.number().min(0).default(0).optional(),
 })
-
-export const CreateProductSchema = ProductSchema.omit({ id: true });
-
-export type ProductData = z.infer<typeof ProductSchema>;
-export type CreateProductData = z.infer<typeof CreateProductSchema>;

@@ -2,7 +2,7 @@ import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, BatchExecuteStatementCommand, ExecuteStatementCommand } from "@aws-sdk/lib-dynamodb";
 
 import { z } from 'zod';
-import { CustomError, ProductSchema, prepareResponse } from "/opt/utils-layer/utils";
+import { CustomError, ProductSchema, prepareResponse } from "/opt/utils";
 
 import type { APIGatewayProxyResult } from "aws-lambda";
 
@@ -42,10 +42,11 @@ export const handler = async (): Promise<APIGatewayProxyResult> => {
 
     const productsList = products.map((product) => {
       const stock = Responses?.find((stock) => stock.Item?.product_id === product.id);
+      const count = typeof stock?.Item?.count === "number" ? stock.Item.count : 0;
 
       return {
         ...product,
-        count: stock?.Item?.count || 0,
+        count,
       }
     });
 

@@ -4,7 +4,7 @@ import { DynamoDBDocumentClient, ExecuteTransactionCommand } from '@aws-sdk/lib-
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 
 import { v4 as uuidv4 } from 'uuid';
-import { prepareResponse, CustomError, CreateProductSchema, ProductData } from '/opt/utils-layer/utils';
+import { prepareResponse, CustomError, ProductSchema } from '/opt/utils';
 
 export const handler = async ({ body }: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   const client = new DynamoDBClient({ region: process.env.AWS_REGION });
@@ -24,7 +24,7 @@ export const handler = async ({ body }: APIGatewayProxyEvent): Promise<APIGatewa
     console.log('Validate data...');
     console.log(data);
 
-    const { title, description, price, count } = CreateProductSchema.required().parse(data);
+    const { title, description, price, count } = ProductSchema.omit({ id: true }).required().parse(data);
 
     console.log('Validated data:', { title, description, price, count });
 

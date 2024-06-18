@@ -3,7 +3,7 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["*"],
-      "/opt/*": ["products-service/*"]
+      "/opt/*": ["products-service/utils-layer/*"]
     },
     "target": "ES2020",
     "module": "commonjs",
