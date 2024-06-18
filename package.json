@@ -10,7 +10,7 @@
     "test": "jest",
     "test:coverage": "jest --coverage",
     "cdk": "cdk",
-    "deploy": "np, run test && cdk deploy",
+    "deploy": "npm run test:coverage && cdk deploy",
     "destroy": "cdk destroy",
     "ddb:fill": "ts-node scripts/fillTables.ts"
   },
