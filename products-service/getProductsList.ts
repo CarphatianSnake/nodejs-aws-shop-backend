@@ -2,7 +2,7 @@ import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, BatchExecuteStatementCommand, ExecuteStatementCommand } from "@aws-sdk/lib-dynamodb";
 
 import { z } from 'zod';
-import { CustomError, ProductSchema, prepareResponse } from "/opt/utils";
+import { CustomError, ProductSchema, prepareResponse } from "/opt/utils-layer/utils";
 
 import type { APIGatewayProxyResult } from "aws-lambda";
 
@@ -17,11 +17,12 @@ export const handler = async (): Promise<APIGatewayProxyResult> => {
 
     const scanCommand = new ExecuteStatementCommand({
       Statement: `SELECT * FROM "${PRODUCTS_TABLE}"`,
+      Limit: 12,
     });
 
     const scanResult = await documentClient.send(scanCommand);
 
-    if (!scanResult.Items || !scanResult.Items.length) {
+    if (!scanResult.Items?.length) {
       throw new CustomError('Products not found!', 404);
     }
 
@@ -39,12 +40,8 @@ export const handler = async (): Promise<APIGatewayProxyResult> => {
 
     const { Responses } = await documentClient.send(batchCommand);
 
-    if (!Responses || !Responses.length) {
-      throw new CustomError('Stocks not found!', 404);
-    }
-
     const productsList = products.map((product) => {
-      const stock = Responses.find((stock) => stock.Item?.product_id === product.id);
+      const stock = Responses?.find((stock) => stock.Item?.product_id === product.id);
 
       return {
         ...product,

@@ -1,4 +1,4 @@
-import type { ProductData } from "/opt/utils";
+import type { ProductData } from "/opt/utils-layer/utils";
 import type { Put } from "@aws-sdk/client-dynamodb";
 import type { NativeAttributeValue } from "@aws-sdk/util-dynamodb";
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";

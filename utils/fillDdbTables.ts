@@ -1,7 +1,7 @@
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, TransactWriteCommand, TransactWriteCommandInput } from "@aws-sdk/lib-dynamodb";
 import { generateStocksData } from "./generateStocksData";
-import { generatePutTransact } from "/opt/utils";
+import { generatePutTransact } from "/opt/utils-layer/utils";
 import { products } from "@/test/mock/products";
 import { TableNames } from "@/types";
 

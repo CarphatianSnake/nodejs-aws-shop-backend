@@ -48,24 +48,6 @@ describe('getProducts handler', () => {
     expect(response2).toHaveProperty('body', JSON.stringify({ message: 'Products not found!' }));
   })
 
-  it('Should return error 404 if stocks not found', async () => {
-    ddbMock.on(ExecuteStatementCommand).resolves({ Items: products });
-    ddbMock.on(BatchExecuteStatementCommand).resolves({ Responses: [] });
-
-    const response1 = await handler();
-
-    expect(response1).toHaveProperty('statusCode', 404);
-    expect(response1).toHaveProperty('body', JSON.stringify({ message: 'Stocks not found!' }));
-
-    ddbMock.on(ExecuteStatementCommand).resolves({ Items: products });
-    ddbMock.on(BatchExecuteStatementCommand).resolves({});
-
-    const response2 = await handler();
-
-    expect(response2).toHaveProperty('statusCode', 404);
-    expect(response2).toHaveProperty('body', JSON.stringify({ message: 'Stocks not found!' }));
-  })
-
   it('Should return error 500 on any error except products/stocks not found', async () => {
     ddbMock.on(ExecuteStatementCommand).rejects();
 

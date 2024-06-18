@@ -4,7 +4,7 @@ import { DynamoDBDocumentClient, ExecuteTransactionCommand } from '@aws-sdk/lib-
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 
 import { v4 as uuidv4 } from 'uuid';
-import { prepareResponse, CustomError, CreateProductSchema, ProductData } from '/opt/utils';
+import { prepareResponse, CustomError, CreateProductSchema, ProductData } from '/opt/utils-layer/utils';
 
 export const handler = async ({ body }: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   const client = new DynamoDBClient({ region: process.env.AWS_REGION });

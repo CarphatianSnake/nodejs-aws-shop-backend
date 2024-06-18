@@ -16,14 +16,31 @@ export class ShopBackendStack extends cdk.Stack {
       STOCKS_TABLE: TableNames.Stocks,
     };
 
+    const DYNAMO_TABLE_ARN = `arn:aws:dynamodb:${this.region}:${this.account}:table/`;
+
     const DYNAMO_ARNS = {
-      products: `arn:aws:dynamodb:${this.region}:${this.account}:table/${TableNames.Products}`,
-      stocks: `arn:aws:dynamodb:${this.region}:${this.account}:table/${TableNames.Stocks}`,
+      products: `${DYNAMO_TABLE_ARN}${TableNames.Products}`,
+      stocks: `${DYNAMO_TABLE_ARN}${TableNames.Stocks}`,
     };
 
     // Create lambda layer
-    const lambdaLayer = new lambda.LayerVersion(this, 'LambdaLayer', {
-      code: lambda.Code.fromAsset('products-service/lambda-layer'),
+    // const lambdaLayer = new lambda.LayerVersion(this, 'LambdaLayer', {
+    //   code: lambda.Code.fromAsset('products-service/lambda-layer'),
+    //   compatibleRuntimes: [lambda.Runtime.NODEJS_20_X],
+    // });
+
+    const utilsLayer = new lambda.LayerVersion(this, 'UtilsLayer', {
+      code: lambda.Code.fromAsset('products-service/utils-layer'),
+      compatibleRuntimes: [lambda.Runtime.NODEJS_20_X],
+    });
+
+    const zodLayer = new lambda.LayerVersion(this, 'ZodLayer', {
+      code: lambda.Code.fromAsset('products-service/zod-layer'),
+      compatibleRuntimes: [lambda.Runtime.NODEJS_20_X],
+    });
+
+    const uuidLayer = new lambda.LayerVersion(this, 'UuidLayer', {
+      code: lambda.Code.fromAsset('products-service/uuid-layer'),
       compatibleRuntimes: [lambda.Runtime.NODEJS_20_X],
     });
 
@@ -31,7 +48,7 @@ export class ShopBackendStack extends cdk.Stack {
     const getProducts = new NodejsFunction(this, 'GetProductsHandler', {
       runtime: lambda.Runtime.NODEJS_20_X,
       entry: 'products-service/getProductsList.ts',
-      layers: [lambdaLayer],
+      layers: [utilsLayer, zodLayer],
       initialPolicy: [new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
         actions: ['dynamodb:PartiQLSelect'],
@@ -43,13 +60,19 @@ export class ShopBackendStack extends cdk.Stack {
     const getProductById = new NodejsFunction(this, 'GetProductByIdHandler', {
       runtime: lambda.Runtime.NODEJS_20_X,
       entry: 'products-service/getProductById.ts',
-      layers: [lambdaLayer],
+      layers: [utilsLayer, zodLayer],
+      initialPolicy: [new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: ['dynamodb:PartiQLSelect'],
+        resources: [DYNAMO_ARNS.products, DYNAMO_ARNS.stocks],
+      })],
+      environment: LAMBDA_ENV,
     });
 
     const createProduct = new NodejsFunction(this, 'CreateProductHandler', {
       runtime: lambda.Runtime.NODEJS_20_X,
       entry: 'products-service/createProduct.ts',
-      layers: [lambdaLayer],
+      layers: [utilsLayer, zodLayer, uuidLayer],
       initialPolicy: [new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
         actions: ['dynamodb:PartiQLInsert'],
