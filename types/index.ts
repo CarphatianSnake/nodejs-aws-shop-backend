@@ -41,7 +41,7 @@ export type PutTransactOptions = Omit<Put, "Item" | "ExpressionAttributeValues" 
 export type PutTransact<T extends Product | Stock> = {
   Put: PutTransactOptions & {
     Item: T;
-    TableName: TableNames;
+    TableName: string | undefined;
     ExpressionAttributeValues?: Record<string, NativeAttributeValue>;
   };
 };

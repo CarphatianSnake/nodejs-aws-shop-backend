@@ -1,5 +1,5 @@
 import { mockClient } from "aws-sdk-client-mock";
-import { DynamoDBDocumentClient, TransactWriteCommand } from "@aws-sdk/lib-dynamodb";
+import { DynamoDBDocumentClient, ExecuteTransactionCommand } from "@aws-sdk/lib-dynamodb";
 
 import { handler } from "@/products-service/createProduct";
 import { response } from "../mock/response";
@@ -30,7 +30,7 @@ describe('createProduct', () => {
 
     defaultEvent.body = JSON.stringify(product);
 
-    ddbMock.on(TransactWriteCommand).resolves(response);
+    ddbMock.on(ExecuteTransactionCommand).resolves(response);
 
     const result = await handler(defaultEvent);
 
@@ -44,7 +44,7 @@ describe('createProduct', () => {
 
     defaultEvent.body = JSON.stringify(product);
 
-    ddbMock.on(TransactWriteCommand).resolves(response);
+    ddbMock.on(ExecuteTransactionCommand).resolves(response);
 
     const result = await handler(defaultEvent);
 
@@ -52,7 +52,7 @@ describe('createProduct', () => {
   })
 
   it('Should return error 400 on invalid product data', async () => {
-    ddbMock.on(TransactWriteCommand).resolves(response);
+    ddbMock.on(ExecuteTransactionCommand).resolves(response);
 
     const product = {
       title: 'Test Title',
@@ -66,8 +66,8 @@ describe('createProduct', () => {
     expect(result).toHaveProperty('statusCode', 400);
   })
 
-  it('Should return error 400 on no data body', async () => {
-    ddbMock.on(TransactWriteCommand).resolves(response);
+  it('Should return error 400 if there is no data inside body', async () => {
+    ddbMock.on(ExecuteTransactionCommand).resolves(response);
 
     const result = await handler(defaultEvent);
 
@@ -75,7 +75,7 @@ describe('createProduct', () => {
   })
 
   it('Should return error 500 on any error except invalid product data', async () => {
-    ddbMock.on(TransactWriteCommand).rejects();
+    ddbMock.on(ExecuteTransactionCommand).rejects();
 
     const product = {
       title: 'Test Title',

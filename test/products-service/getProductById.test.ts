@@ -1,7 +1,7 @@
 import { handler } from "@/products-service/getProductById";
 import { products } from "../mock/products";
 import { httpEventMock } from "../mock/httpEventMock";
-import type { HttpEventRequest, ProductPathParams } from "@/types";
+import type { HttpEventRequest } from "@/types";
 
 const defaultEvent: HttpEventRequest = {
   ...httpEventMock

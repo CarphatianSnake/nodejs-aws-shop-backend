@@ -1,4 +1,4 @@
-import * as utils from "/opt/utils";
+import * as utils from "../../products-service/lambda-layer/utils";
 import { handler } from "@/products-service/getProductsList";
 import { products } from "../mock/products";
 

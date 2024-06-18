@@ -7,13 +7,63 @@ export const prepareResponse = (statusCode: number, body: HttpResponseBody) => {
     headers: {
       "Content-Type": "application/json",
       "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET,PUT,OPTIONS",
+      "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
       "Access-Control-Allow-Headers": "Authorization, Access-Control-Allow-Origin, Access-Control-Allow-Methods, Content-Type",
     },
     body: JSON.stringify(body),
   };
 };
 
+export function generatePutTransact(
+  item: Product,
+  tableName: string | undefined,
+  options?: PutTransactOptions
+): PutTransact<Product> | never;
+export function generatePutTransact(
+  item: Stock,
+  tableName: string | undefined,
+  options?: PutTransactOptions
+): PutTransact<Stock> | never;
+export function generatePutTransact(
+  item: Product | Stock,
+  tableName: string | undefined,
+  options?: PutTransactOptions
+): PutTransact<Product | Stock> | never {
+  if (!tableName) {
+    throw new CustomError('Table name is required', 500);
+  }
+
+  return {
+    Put: {
+      TableName: tableName,
+      Item: item,
+      ...options
+    },
+  };
+};
+
+export class CustomError extends Error {
+  statusCode: number;
+  constructor(message: string, statusCode: number) {
+    super(message);
+    this.statusCode = statusCode;
+  }
+}
+
+export const ProductSchema = z.object({
+  id: z.string().uuid(),
+  title: z.string(),
+  description: z.string().default('').optional(),
+  price: z.number().min(0).default(0).optional(),
+  count: z.number().min(0).default(0).optional(),
+})
+
+export const CreateProductSchema = ProductSchema.omit({ id: true });
+
+export type ProductData = z.infer<typeof ProductSchema>;
+export type CreateProductData = z.infer<typeof CreateProductSchema>;
+
+// for mocked products (must be deleted in task4)
 export const products: Product[] = [
   {
     description: "Short Product Description1",
@@ -54,32 +104,3 @@ export const products: Product[] = [
 ];
 
 export const getProductsList = () => products;
-
-export function generatePutTransact(item: Product, tableName: string, options?: PutTransactOptions): PutTransact<Product>;
-export function generatePutTransact(item: Stock, tableName: string, options?: PutTransactOptions): PutTransact<Stock>;
-export function generatePutTransact(item: Product | Stock, tableName: string, options?: PutTransactOptions) {
-  return {
-    Put: {
-      TableName: tableName,
-      Item: item,
-      ...options
-    },
-  };
-};
-
-export class CustomError extends Error {
-  statusCode: number;
-  constructor(message: string, statusCode: number) {
-    super(message);
-    this.statusCode = statusCode;
-  }
-}
-
-export const CreateProductDataSchema = z.object({
-  title: z.string(),
-  description: z.string().default('').optional(),
-  price: z.number().min(0).default(0).optional(),
-  count: z.number().min(0).default(0).optional(),
-});
-
-export type CreateProductData = z.infer<typeof CreateProductDataSchema>;

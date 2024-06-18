@@ -7,6 +7,6 @@ const app = new cdk.App();
 new ShopBackendStack(app, 'ShopBackendStack', {
   env: {
     account: process.env.AWS_ACCOUNT_NUMBER,
-    region: process.env.AWS_REGION
-  }
+    region: process.env.AWS_REGION,
+  },
 });

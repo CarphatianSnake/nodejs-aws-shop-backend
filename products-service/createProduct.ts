@@ -1,15 +1,16 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { DynamoDBDocumentClient, TransactWriteCommand, TransactWriteCommandInput } from '@aws-sdk/lib-dynamodb';
+import { DynamoDBDocumentClient, ExecuteTransactionCommand } from '@aws-sdk/lib-dynamodb';
 
-import type { APIGatewayProxyEvent } from 'aws-lambda';
-import { TableNames, type HttpResponse } from '@/types';
+import type { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 
 import { v4 as uuidv4 } from 'uuid';
-import { prepareResponse, generatePutTransact, CustomError, CreateProductDataSchema } from '/opt/utils';
+import { prepareResponse, CustomError, CreateProductSchema } from '/opt/utils';
 
-export const handler = async ({ body }: APIGatewayProxyEvent): HttpResponse => {
+export const handler = async ({ body }: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   const client = new DynamoDBClient({ region: process.env.AWS_REGION });
   const documentClient = DynamoDBDocumentClient.from(client);
+
+  const { PRODUCTS_TABLE, STOCKS_TABLE } = process.env;
 
   try {
     console.log('Check is data exists...');
@@ -23,49 +24,40 @@ export const handler = async ({ body }: APIGatewayProxyEvent): HttpResponse => {
     console.log('Validate data...');
     console.log(data);
 
-    const { title, description, price, count } = CreateProductDataSchema.required().parse(data);
+    const { title, description, price, count } = CreateProductSchema.required().parse(data);
 
     console.log('Validated data:', { title, description, price, count });
 
-    const product = {
-      id: uuidv4(),
-      title,
-      description,
-      price,
-    };
+    const id = uuidv4();
 
-    const stock = {
-      product_id: product.id,
-      count,
-    };
+    console.log('Run transact with validated data...');
 
-    console.log('\nFill tables with data');
-    console.log('\nProduct:');
-    console.log(product);
-    console.log('\nStock:');
-    console.log(stock);
+    const command = new ExecuteTransactionCommand({
+      TransactStatements: [
+        {
+          Statement: `INSERT INTO "${PRODUCTS_TABLE}" VALUE {
+            'id': '${id}',
+            'title': '${title}',
+            'description': '${description}',
+            'price': ${price}
+          }`,
+        },
+        {
+          Statement: `INSERT INTO "${STOCKS_TABLE}" VALUE {
+            'product_id': '${id}',
+            'count': ${count}
+          }`,
+        },
+      ],
+    });
 
-    const productTrasact = generatePutTransact(product, TableNames.Products);
-    const stockTrasact = generatePutTransact(stock, TableNames.Stocks);
-
-    const transactInput: TransactWriteCommandInput = {
-      TransactItems: [
-        productTrasact,
-        stockTrasact,
-      ]
-    };
-
-    console.log('Run transact...');
-
-    const transactWriteCommand = new TransactWriteCommand(transactInput);
-
-    await documentClient.send(transactWriteCommand);
+    await documentClient.send(command);
 
     console.log('\nProduct successfully added!\n');
 
-    return prepareResponse(201, { message: `Product with id=${product.id} created!` });
+    return prepareResponse(201, { message: `Product with id=${id} created!` });
   } catch (error) {
-    console.log(error)
+    console.error(error);
 
     const isCustomError = error instanceof CustomError;
     const isZodError = error instanceof Error && error.hasOwnProperty('issues');
