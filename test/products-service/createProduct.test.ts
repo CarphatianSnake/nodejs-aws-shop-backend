@@ -1,13 +1,11 @@
 import { mockClient } from "aws-sdk-client-mock";
 import { DynamoDBDocumentClient, ExecuteTransactionCommand } from "@aws-sdk/lib-dynamodb";
-import * as uuid from 'uuid';
 
 import { handler } from "@/products-service/createProduct";
-import { response } from "../mock/response";
 import { httpEventMock } from "../mock/httpEventMock";
 import type { HttpEventRequest } from "@/types";
 
-describe('createProduct', () => {
+describe('createProduct handler', () => {
   const ddbMock = mockClient(DynamoDBDocumentClient);
 
   const defaultEvent: HttpEventRequest = {

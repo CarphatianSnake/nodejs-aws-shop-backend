@@ -32,6 +32,12 @@ export class ShopBackendStack extends cdk.Stack {
       runtime: lambda.Runtime.NODEJS_20_X,
       entry: 'products-service/getProductsList.ts',
       layers: [lambdaLayer],
+      initialPolicy: [new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: ['dynamodb:PartiQLSelect'],
+        resources: [DYNAMO_ARNS.products, DYNAMO_ARNS.stocks],
+      })],
+      environment: LAMBDA_ENV,
     });
 
     const getProductById = new NodejsFunction(this, 'GetProductByIdHandler', {
