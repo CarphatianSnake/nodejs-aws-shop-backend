@@ -1,7 +1,7 @@
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, BatchGetCommand, BatchGetCommandInput } from "@aws-sdk/lib-dynamodb";
 
-import { CustomError } from "./CustomError";
+import { CustomError } from "/opt/utils";
 
 const client = new DynamoDBClient({ region: process.env.AWS_REGION });
 const documentClient = DynamoDBDocumentClient.from(client);

@@ -2,7 +2,7 @@ import { mockClient } from "aws-sdk-client-mock";
 import { DynamoDBDocumentClient, BatchGetCommand } from "@aws-sdk/lib-dynamodb";
 
 import { getProductById } from '@/utils/getProductById';
-import { CustomError } from "@/utils/CustomError";
+import { CustomError } from "/opt/utils";
 
 describe('getProductById', () => {
   const ddbMock = mockClient(DynamoDBDocumentClient);

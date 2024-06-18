@@ -3,7 +3,7 @@ import { DynamoDBDocumentClient, BatchGetCommand, ScanCommand } from "@aws-sdk/l
 
 import { getProductsList } from "@/utils/getProductsList";
 import { generateStocksData } from "@/utils/generateStocksData";
-import { CustomError } from "@/utils/CustomError";
+import { CustomError } from "/opt/utils";
 import { products } from "../mock/products";
 
 describe('getProductsList', () => {
