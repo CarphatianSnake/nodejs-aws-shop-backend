@@ -1,3 +1,4 @@
+import type { ProductData } from "/opt/utils";
 import type { Put } from "@aws-sdk/client-dynamodb";
 import type { NativeAttributeValue } from "@aws-sdk/util-dynamodb";
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
@@ -18,7 +19,7 @@ export type Stock = {
   count: number;
 };
 
-export type HttpResponseBody = HttpErrorMessage | Product | Product[];
+export type HttpResponseBody = HttpErrorMessage | Product | Product[] | ProductData;
 
 export type ProductPathParams = {
   productId?: string

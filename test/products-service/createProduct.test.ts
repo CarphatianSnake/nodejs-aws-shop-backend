@@ -1,5 +1,6 @@
 import { mockClient } from "aws-sdk-client-mock";
 import { DynamoDBDocumentClient, ExecuteTransactionCommand } from "@aws-sdk/lib-dynamodb";
+import * as uuid from 'uuid';
 
 import { handler } from "@/products-service/createProduct";
 import { response } from "../mock/response";
@@ -30,11 +31,19 @@ describe('createProduct', () => {
 
     defaultEvent.body = JSON.stringify(product);
 
-    ddbMock.on(ExecuteTransactionCommand).resolves(response);
-
     const result = await handler(defaultEvent);
 
-    expect(JSON.parse(result.body)).resolves;
+    const parsedResult = JSON.parse(result.body);
+
+    const { title, description, price, count } = parsedResult;
+
+    expect(parsedResult).toHaveProperty('id');
+    expect({ title, description, price, count }).toStrictEqual({
+      title: product.title,
+      description: product.description,
+      price: product.price,
+      count: product.count
+    });
   })
 
   it('Should successfully add product with partial data to database', async () => {
@@ -44,16 +53,22 @@ describe('createProduct', () => {
 
     defaultEvent.body = JSON.stringify(product);
 
-    ddbMock.on(ExecuteTransactionCommand).resolves(response);
-
     const result = await handler(defaultEvent);
 
-    expect(JSON.parse(result.body)).resolves;
+    const parsedResult = JSON.parse(result.body);
+
+    const { title, description, price, count } = parsedResult;
+
+    expect(parsedResult).toHaveProperty('id');
+    expect({ title, description, price, count }).toStrictEqual({
+      title: product.title,
+      description: '',
+      price: 0,
+      count: 0
+    });
   })
 
   it('Should return error 400 on invalid product data', async () => {
-    ddbMock.on(ExecuteTransactionCommand).resolves(response);
-
     const product = {
       title: 'Test Title',
       price: -100,
@@ -67,7 +82,7 @@ describe('createProduct', () => {
   })
 
   it('Should return error 400 if there is no data inside body', async () => {
-    ddbMock.on(ExecuteTransactionCommand).resolves(response);
+    defaultEvent.body = null;
 
     const result = await handler(defaultEvent);
 
@@ -75,14 +90,15 @@ describe('createProduct', () => {
   })
 
   it('Should return error 500 on any error except invalid product data', async () => {
-    ddbMock.on(ExecuteTransactionCommand).rejects();
 
     const product = {
-      title: 'Test Title',
-      description: 'Test Description',
+      title: 'Reject test',
+      description: 'Must reject',
       price: 100,
       count: 4,
     };
+
+    ddbMock.on(ExecuteTransactionCommand).rejects();
 
     defaultEvent.body = JSON.stringify(product);
 

@@ -4,7 +4,7 @@ import { DynamoDBDocumentClient, ExecuteTransactionCommand } from '@aws-sdk/lib-
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 
 import { v4 as uuidv4 } from 'uuid';
-import { prepareResponse, CustomError, CreateProductSchema } from '/opt/utils';
+import { prepareResponse, CustomError, CreateProductSchema, ProductData } from '/opt/utils';
 
 export const handler = async ({ body }: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   const client = new DynamoDBClient({ region: process.env.AWS_REGION });
@@ -51,11 +51,12 @@ export const handler = async ({ body }: APIGatewayProxyEvent): Promise<APIGatewa
       ],
     });
 
-    await documentClient.send(command);
+    const result = await documentClient.send(command);
 
     console.log('\nProduct successfully added!\n');
+    console.log(result);
 
-    return prepareResponse(201, { message: `Product with id=${id} created!` });
+    return prepareResponse(201, { id, title, description, price, count });
   } catch (error) {
     console.error(error);
 

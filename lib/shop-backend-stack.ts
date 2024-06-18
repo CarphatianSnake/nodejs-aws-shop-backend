@@ -71,7 +71,7 @@ export class ShopBackendStack extends cdk.Stack {
       httpApi: productsApi,
       stageName: 'dev',
       autoDeploy: true,
-    })
+    });
 
     // Add routes to products service API endpoint
     productsApi.addRoutes({
