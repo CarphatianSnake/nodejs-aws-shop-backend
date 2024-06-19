@@ -57,7 +57,7 @@ export const handler = async (): Promise<APIGatewayProxyResult> => {
   } catch (error) {
     console.error(error);
     if (error instanceof CustomError) {
-      return prepareResponse(404, { message: error.message });
+      return prepareResponse(404, { message: 'Products not found!' });
     }
 
     return prepareResponse(500, { message: 'Something went wrong!' });

@@ -6,6 +6,8 @@ import type { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 import { v4 as uuidv4 } from 'uuid';
 import { prepareResponse, CustomError, ProductSchema } from '/opt/utils';
 
+import { z } from 'zod';
+
 export const handler = async ({ body }: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   const client = new DynamoDBClient({ region: process.env.AWS_REGION });
   const documentClient = DynamoDBDocumentClient.from(client);
@@ -61,7 +63,7 @@ export const handler = async ({ body }: APIGatewayProxyEvent): Promise<APIGatewa
     console.error(error);
 
     const isCustomError = error instanceof CustomError;
-    const isZodError = error instanceof Error && error.hasOwnProperty('issues');
+    const isZodError = error instanceof z.ZodError;
 
     if (isCustomError || isZodError) {
       return prepareResponse(400, { message: 'Invalid product data!' });
