@@ -4,13 +4,19 @@ import { DynamoDBDocumentClient, BatchExecuteStatementCommand, ExecuteStatementC
 import { handler } from "@/products-service/getProductsList";
 import { products } from "../mock/products";
 import { generateStocksData } from "@/utils/generateStocksData";
+import { TableNames } from "@/types";
 
 describe('getProducts handler', () => {
   const ddbMock = mockClient(DynamoDBDocumentClient);
+  process.env = {
+    ...process.env,
+    PRODUCTS_TABLE: TableNames.Products,
+    STOCKS_TABLE: TableNames.Stocks,
+  };
 
   beforeEach(() => {
     ddbMock.reset();
-    jest.spyOn(console, 'log').mockImplementation(() => { });
+    // jest.spyOn(console, 'log').mockImplementation(() => { });
     jest.spyOn(console, 'error').mockImplementation(() => { });
   });
 

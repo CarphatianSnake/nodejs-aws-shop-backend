@@ -14,21 +14,30 @@ export const handler = async ({ pathParameters }: HttpEventRequest): Promise<API
     const { PRODUCTS_TABLE, STOCKS_TABLE } = process.env;
     const id = pathParameters.productId;
 
+    console.log('Checking is id exists...');
+
     if (!id) {
       throw new CustomError('Product id is required!', 400);
     }
 
-    console.log('Running products batch by id');
-    console.log({ id });
+    console.log('Running product batch by id...');
+
+    const productStatement = {
+      Statement: `SELECT * FROM "${PRODUCTS_TABLE}" WHERE "id" = '${id}'`
+    };
+
+    console.log('Product statement:', productStatement);
+
+    const stockStatement = {
+      Statement: `SELECT "count" FROM "${STOCKS_TABLE}" WHERE "product_id" = '${id}'`
+    };
+
+    console.log('Stock statement:', stockStatement);
 
     const batchCommand = new BatchExecuteStatementCommand({
       Statements: [
-        {
-          Statement: `SELECT * FROM "${PRODUCTS_TABLE}" WHERE "id" = '${id}'`
-        },
-        {
-          Statement: `SELECT "count" FROM "${STOCKS_TABLE}" WHERE "product_id" = '${id}'`
-        },
+        productStatement,
+        stockStatement,
       ],
     });
 
@@ -44,24 +53,37 @@ export const handler = async ({ pathParameters }: HttpEventRequest): Promise<API
 
     const stock = Responses?.find((item) => item.TableName === STOCKS_TABLE);
 
-    const result = ProductSchema.required().parse({
+    console.log('Validating product data...');
+
+    const productData = {
       ...product.Item,
       count: stock?.Item?.count || 0,
-    });
+    };
 
-    console.log(result);
+    console.log('Product data:', productData);
 
-    return prepareResponse(200, result);
+    const result = ProductSchema.required().parse(productData);
+
+    const response = prepareResponse(200, result);
+    console.log('Response:', response);
+
+    return response;
   } catch (error) {
     console.error(error);
     if (error instanceof CustomError) {
       if (error.statusCode === 404) {
-        return prepareResponse(404, { message: 'Product not found!' });
+        const response = prepareResponse(404, { message: 'Product not found!' });
+        console.log(response);
+        return response;
       }
       if (error.statusCode === 400) {
-        return prepareResponse(400, { message: 'Product id is required!' });
+        const response = prepareResponse(400, { message: 'Product id is required!' });
+        console.log(response);
+        return response;
       }
     }
-    return prepareResponse(500, { message: 'Something went wrong!' });
+    const response = prepareResponse(500, { message: 'Something went wrong!' });
+    console.log(response);
+    return response;
   }
 };

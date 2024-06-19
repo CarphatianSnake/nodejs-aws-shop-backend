@@ -7,6 +7,8 @@ import { CustomError, ProductSchema, prepareResponse } from "/opt/utils";
 import type { APIGatewayProxyResult } from "aws-lambda";
 
 export const handler = async (): Promise<APIGatewayProxyResult> => {
+  const LIMIT = 12;
+
   try {
     const client = new DynamoDBClient({ region: process.env.AWS_REGION });
     const documentClient = DynamoDBDocumentClient.from(client);
@@ -15,9 +17,13 @@ export const handler = async (): Promise<APIGatewayProxyResult> => {
 
     console.log('Running products scan...');
 
+    const scanStatement = `SELECT * FROM "${PRODUCTS_TABLE}"`;
+    console.log('Scan statement:', { Statement: scanStatement });
+    console.log('Scan limit:', { Limit: LIMIT });
+
     const scanCommand = new ExecuteStatementCommand({
-      Statement: `SELECT * FROM "${PRODUCTS_TABLE}"`,
-      Limit: 12,
+      Statement: scanStatement,
+      Limit: LIMIT,
     });
 
     const scanResult = await documentClient.send(scanCommand);
@@ -27,15 +33,20 @@ export const handler = async (): Promise<APIGatewayProxyResult> => {
     }
 
     console.log('Validating recieved products data...');
+    console.log('Recieved data:', scanResult.Items);
 
     const products = z.array(ProductSchema.required().omit({ count: true })).parse(scanResult.Items);
 
     console.log('Running stocks batch...');
 
+    const batchStatements = products.map((product) => ({
+      Statement: `SELECT * FROM "${STOCKS_TABLE}" WHERE "product_id" = '${product.id}'`,
+    }));
+
+    console.log('Batch statements:', batchStatements);
+
     const batchCommand = new BatchExecuteStatementCommand({
-      Statements: products.map((product) => ({
-        Statement: `SELECT * FROM "${STOCKS_TABLE}" WHERE "product_id" = '${product.id}'`,
-      })),
+      Statements: batchStatements,
     });
 
     const { Responses } = await documentClient.send(batchCommand);
@@ -50,16 +61,20 @@ export const handler = async (): Promise<APIGatewayProxyResult> => {
       }
     });
 
-    console.log('Products recieved');
-    console.log(productsList);
+    console.log('Products recieved!');
 
-    return prepareResponse(200, productsList);
+    const response = prepareResponse(200, productsList);
+    console.log(response);
+    return response;
   } catch (error) {
     console.error(error);
     if (error instanceof CustomError) {
-      return prepareResponse(404, { message: 'Products not found!' });
+      const response = prepareResponse(404, { message: 'Products not found!' });
+      console.log(response);
+      return response;
     }
-
-    return prepareResponse(500, { message: 'Something went wrong!' });
+    const response = prepareResponse(500, { message: 'Something went wrong!' });
+    console.log(response);
+    return response;
   }
 };

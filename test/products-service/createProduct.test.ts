@@ -3,10 +3,15 @@ import { DynamoDBDocumentClient, ExecuteTransactionCommand } from "@aws-sdk/lib-
 
 import { handler } from "@/products-service/createProduct";
 import { httpEventMock } from "../mock/httpEventMock";
-import type { HttpEventRequest } from "@/types";
+import { TableNames, type HttpEventRequest } from "@/types";
 
 describe('createProduct handler', () => {
   const ddbMock = mockClient(DynamoDBDocumentClient);
+  process.env = {
+    ...process.env,
+    PRODUCTS_TABLE: TableNames.Products,
+    STOCKS_TABLE: TableNames.Stocks,
+  };
 
   const defaultEvent: HttpEventRequest = {
     ...httpEventMock
