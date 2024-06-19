@@ -12,7 +12,7 @@
     "cdk": "cdk",
     "deploy": "npm run test:coverage && cdk deploy",
     "destroy": "cdk destroy",
-    "ddb:fill": "ts-node scripts/fillTables.ts"
+    "ddb:fill": "ts-node scripts/runFillTables.ts"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.138",
