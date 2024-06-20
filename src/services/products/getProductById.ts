@@ -1,17 +1,20 @@
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, BatchExecuteStatementCommand } from "@aws-sdk/lib-dynamodb";
 
-import { CustomError, ProductSchema, prepareResponse } from '/opt/utils';
+import { CustomError, ProductSchema, createResponse } from '/opt/utils';
 import type { HttpEventRequest } from '@/types';
 
 import type { APIGatewayProxyResult } from "aws-lambda";
 
 export const handler = async ({ pathParameters }: HttpEventRequest): Promise<APIGatewayProxyResult> => {
-  try {
-    const client = new DynamoDBClient({ region: process.env.AWS_REGION });
-    const documentClient = DynamoDBDocumentClient.from(client);
+  const { PRODUCTS_TABLE, STOCKS_TABLE } = process.env;
 
-    const { PRODUCTS_TABLE, STOCKS_TABLE } = process.env;
+  const response = createResponse(['GET', 'OPTIONS']);
+
+  const client = new DynamoDBClient({ region: process.env.AWS_REGION });
+  const documentClient = DynamoDBDocumentClient.from(client);
+
+  try {
     const id = pathParameters.productId;
 
     console.log('Checking is id exists...');
@@ -64,26 +67,22 @@ export const handler = async ({ pathParameters }: HttpEventRequest): Promise<API
 
     const result = ProductSchema.required().parse(productData);
 
-    const response = prepareResponse(200, result);
-    console.log('Response:', response);
-
-    return response;
+    response.statusCode = 200;
+    response.body = JSON.stringify(result);
   } catch (error) {
     console.error(error);
     if (error instanceof CustomError) {
       if (error.statusCode === 404) {
-        const response = prepareResponse(404, { message: 'Product not found!' });
-        console.log(response);
-        return response;
+        response.statusCode = 404;
+        response.body = JSON.stringify({ message: 'Product not found!' });
       }
       if (error.statusCode === 400) {
-        const response = prepareResponse(400, { message: 'Product id is required!' });
-        console.log(response);
-        return response;
+        response.statusCode = 400;
+        response.body = JSON.stringify({ message: 'Product id is required!' });
       }
     }
-    const response = prepareResponse(500, { message: 'Something went wrong!' });
-    console.log(response);
-    return response;
   }
+
+  console.log('Response:', response);
+  return response;
 };
