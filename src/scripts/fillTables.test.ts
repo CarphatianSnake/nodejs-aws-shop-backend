@@ -1,7 +1,7 @@
 import { mockClient } from "aws-sdk-client-mock";
 import { DynamoDBDocumentClient, TransactWriteCommand } from "@aws-sdk/lib-dynamodb";
 
-import { fillDdbTables } from "@/scripts/fillTables";
+import { fillDdbTables } from "./fillTables";
 import { response } from "@/mock/response";
 
 describe('fillDdbTables', () => {

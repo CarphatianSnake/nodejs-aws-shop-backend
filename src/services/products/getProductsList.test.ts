@@ -1,7 +1,7 @@
 import { mockClient } from "aws-sdk-client-mock";
 import { DynamoDBDocumentClient, BatchExecuteStatementCommand, ExecuteStatementCommand } from "@aws-sdk/lib-dynamodb";
 
-import { handler } from "@/services/products/getProductsList";
+import { handler } from "./getProductsList";
 import { products } from "@/mock/products";
 import { generateStocksData } from "@/utils/generateStocksData";
 import { TableNames } from "@/types";
@@ -28,15 +28,33 @@ describe('getProducts handler', () => {
       return {
         ...product,
         count: stock?.Item?.count || 0,
-      }
+      };
     });
 
     ddbMock.on(ExecuteStatementCommand).resolves({ Items: products });
     ddbMock.on(BatchExecuteStatementCommand).resolves({ Responses: stocks });
 
-    const response = await handler();
-    expect(JSON.parse(response.body)).toStrictEqual(result);
+    const response1 = await handler();
+    expect(JSON.parse(response1.body)).toStrictEqual(result);
   });
+
+  it('Should return products array if there is partial stocks data recieved', async () => {
+    const stocks = generateStocksData().slice(0, -2).map((stock) => ({ Item: stock }));
+    const result = products.map((product) => {
+      const stock = stocks.find((stock) => stock.Item.product_id === product.id);
+
+      return {
+        ...product,
+        count: stock?.Item?.count || 0,
+      };
+    });
+
+    ddbMock.on(ExecuteStatementCommand).resolves({ Items: products });
+    ddbMock.on(BatchExecuteStatementCommand).resolves({ Responses: stocks });
+
+    const response1 = await handler();
+    expect(JSON.parse(response1.body)).toStrictEqual(result);
+  })
 
   it('Should return error 404 if products not found', async () => {
     ddbMock.on(ExecuteStatementCommand).resolves({ Items: [] });

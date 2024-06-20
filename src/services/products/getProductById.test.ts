@@ -1,7 +1,7 @@
 import { mockClient } from "aws-sdk-client-mock";
 import { DynamoDBDocumentClient, BatchExecuteStatementCommand } from "@aws-sdk/lib-dynamodb";
 
-import { handler } from "@/services/products/getProductById";
+import { handler } from "./getProductById";
 import { products } from "@/mock/products";
 import { httpEventMock } from "@/mock/httpEventMock";
 import { TableNames, type HttpEventRequest } from "@/types";
@@ -53,6 +53,26 @@ describe('getProductById handler', () => {
       count: stock.count,
     });
   });
+
+  it('Should return product data with 0 count if there is no stock in response', async () => {
+    defaultEvent.pathParameters = { productId: products[0].id };
+
+    ddbMock.on(BatchExecuteStatementCommand).resolves({
+      Responses: [
+        {
+          Item: products[0],
+          TableName: TableNames.Products,
+        }
+      ],
+    });
+
+    const result = await handler(defaultEvent);
+
+    expect(JSON.parse(result.body)).toStrictEqual({
+      ...products[0],
+      count: 0,
+    });
+  })
 
   it('Should return error 404 if product not found', async () => {
     const productId = '12345678-abcd-efgh-ijkl-1234567890ab';

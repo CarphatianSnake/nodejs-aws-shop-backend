@@ -1,7 +1,7 @@
 import { mockClient } from "aws-sdk-client-mock";
 import { DynamoDBDocumentClient, ExecuteTransactionCommand } from "@aws-sdk/lib-dynamodb";
 
-import { handler } from "@/services/products/createProduct";
+import { handler } from "./createProduct";
 import { httpEventMock } from "@/mock/httpEventMock";
 import { TableNames, type HttpEventRequest } from "@/types";
 

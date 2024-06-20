@@ -17,6 +17,7 @@ export function generatePutTransact(
   tableName: string | undefined,
   options?: PutTransactOptions
 ): PutTransact<Product | Stock> | never {
+
   if (!tableName) {
     throw new CustomError('Table name is required', 500);
   }

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { Product, PutTransact, PutTransactOptions, Stock, HttpResponseBody } from "@/types";
+import type { HttpResponseBody } from "@/types";
 
 export const prepareResponse = (statusCode: number, body: HttpResponseBody) => {
   return {
@@ -28,4 +28,4 @@ export const ProductSchema = z.object({
   description: z.string().default('').optional(),
   price: z.number().min(0).default(0).optional(),
   count: z.number().min(0).default(0).optional(),
-})
+});
