@@ -5,7 +5,7 @@ module.exports = {
     "^.+\\.tsx?$": "ts-jest",
   },
   moduleNameMapper: {
-    "^@/(.*)$": "<rootDir>/$1",
-    "^/opt(.*)$": "<rootDir>/products-service/utils-layer/$1",
+    "^@/(.*)$": "<rootDir>/src/$1",
+    "^/opt(.*)$": "<rootDir>/src/layers/$1",
   },
 };
