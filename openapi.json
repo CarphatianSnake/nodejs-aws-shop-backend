@@ -1,0 +1,131 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "MyStore - OpenAPI 3.0",
+    "description": "This is a sample MyStore Server based on the OpenAPI 3.0 specification.",
+    "version": "0.1.0"
+  },
+  "servers": [
+    {
+      "url": "https://vwkevd2g6j.execute-api.eu-west-1.amazonaws.com/"
+    }
+  ],
+  "tags": [
+    {
+      "name": "products",
+      "description": "Access to products data"
+    }
+  ],
+  "paths": {
+    "/products": {
+      "get": {
+        "tags": ["products"],
+        "summary": "Get products list",
+        "description": "List of products.",
+        "operationId": "getProducts",
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Product"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/products/{productId}": {
+      "get": {
+        "tags": ["products"],
+        "summary": "Find product by ID",
+        "description": "Returns a single product.",
+        "operationId": "getProductById",
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "path",
+            "description": "ID of product to return",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Product"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing product id",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorMessage"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Product not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorMessage"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Product": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "7567ec4b-b10c-48c5-9345-fc73c48a80aa"
+          },
+          "title": {
+            "type": "string",
+            "example": "Product title"
+          },
+          "description": {
+            "type": "string",
+            "example": "Product description"
+          },
+          "price": {
+            "type": "integer",
+            "example": 15
+          }
+        }
+      },
+      "ErrorMessage": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Something went wrong"
+          }
+        }
+      }
+    }
+  }
+}
