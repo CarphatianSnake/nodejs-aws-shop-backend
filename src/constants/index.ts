@@ -1,6 +1,6 @@
 import path = require('node:path');
 
-export const ORIGINS = ['https://d3ffym298mm09d.cloudfront.net', 'https://localhost:3000'];
+export const ORIGINS = ['https://d3ffym298mm09d.cloudfront.net', 'http://localhost:3000'];
 
 export const ALLOWED_HEADERS = ['Content-Type', 'Authorization', 'Access-Control-Allow-Methods', 'Access-Control-Allow-Origin'];
 

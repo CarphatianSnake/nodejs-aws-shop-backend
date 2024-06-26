@@ -5,8 +5,11 @@ import * as iam from 'aws-cdk-lib/aws-iam';
 import { HttpLambdaIntegration } from 'aws-cdk-lib/aws-apigatewayv2-integrations';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { Construct } from 'constructs';
-import { ALLOWED_HEADERS, API_PATHS, ORIGINS, SERVICES_PATH } from '@/constants';
+import { ALLOWED_HEADERS, API_PATHS, LAYERS_PATH, ORIGINS, SERVICES_PATH } from '@/constants';
 import path = require('node:path');
+
+const BUCKET = 'import-service-bucket-rss-course-carp';
+const RESOURCE = 'arn:aws:s3:::import-service-bucket-rss-course-carp';
 
 export class ImportServiceStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -28,33 +31,26 @@ export class ImportServiceStack extends cdk.Stack {
       autoDeploy: true,
     });
 
-    // ==========================
-    // TODO
-    // ==========================
+    // Create lambda layers
+    const utilsLayer = new lambda.LayerVersion(this, 'UtilsLayer', {
+      code: lambda.Code.fromAsset(path.join(LAYERS_PATH, 'utils')),
+      compatibleRuntimes: [lambda.Runtime.NODEJS_20_X],
+    });
 
-    // Create lambda functions
+    // Create import products file service lambda function
     const importProductsFile = new NodejsFunction(this, 'ImportHandler', {
       runtime: lambda.Runtime.NODEJS_20_X,
       entry: path.join(SERVICES_PATH.Import, 'importProductsFile.ts'),
-      layers: [],
+      layers: [utilsLayer],
       initialPolicy: [new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
-        actions: [],
-        resources: [],
+        actions: ['s3:PutObject'],
+        resources: [`${RESOURCE}/uploaded/*`],
       })],
-      environment: {},
-    });
-
-    const importFileParser = new NodejsFunction(this, 'ParserHandler', {
-      runtime: lambda.Runtime.NODEJS_20_X,
-      entry: path.join(SERVICES_PATH.Import, 'importFileParser.ts'),
-      layers: [],
-      initialPolicy: [new iam.PolicyStatement({
-        effect: iam.Effect.ALLOW,
-        actions: [],
-        resources: [],
-      })],
-      environment: {},
+      environment: {
+        BUCKET,
+        REGION: this.region
+      },
     });
 
     // Create import service integration
@@ -66,5 +62,22 @@ export class ImportServiceStack extends cdk.Stack {
       methods: [apigw.HttpMethod.GET],
       integration: importProductsFileIntegration,
     });
+
+    // ==========================
+    // TODO
+    // ==========================
+
+    // Create import file parser lambda function
+    // const importFileParser = new NodejsFunction(this, 'ParserHandler', {
+    //   runtime: lambda.Runtime.NODEJS_20_X,
+    //   entry: path.join(SERVICES_PATH.Import, 'importFileParser.ts'),
+    //   layers: [],
+    //   initialPolicy: [new iam.PolicyStatement({
+    //     effect: iam.Effect.ALLOW,
+    //     actions: ['s3:ObjectCreated:*'],
+    //     resources: [`${RESOURCE}/uploaded`],
+    //   })],
+    //   environment: { BUCKET },
+    // });
   }
 }

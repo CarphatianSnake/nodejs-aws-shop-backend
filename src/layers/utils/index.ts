@@ -1,12 +1,16 @@
 import { z } from 'zod';
 
-export const createResponse = (methods: ('GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'HEAD' | 'OPTIONS')[]) => ({
+export const createResponse = (
+  methods: ('GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'HEAD' | 'OPTIONS')[],
+  headers?: { [x: string]: string }
+) => ({
   statusCode: 500,
   headers: {
-    "Access-Control-Allow-Origin": "https://d3ffym298mm09d.cloudfront.net, https://localhost:3000",
+    "Access-Control-Allow-Origin": "https://d3ffym298mm09d.cloudfront.net, http://localhost:3000",
     "Access-Control-Allow-Headers": "Authorization, Access-Control-Allow-Origin, Access-Control-Allow-Methods, Content-Type",
     "Access-Control-Allow-Methods": `${methods.join(', ')}`,
     "Content-Type": "application/json",
+    ...headers,
   },
   body: JSON.stringify({ message: 'Something went wrong!' })
 });
