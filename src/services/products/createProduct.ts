@@ -14,7 +14,6 @@ export const handler = async ({ body }: APIGatewayProxyEvent): Promise<APIGatewa
 
   const client = new DynamoDBClient({ region: process.env.AWS_REGION });
   const documentClient = DynamoDBDocumentClient.from(client);
-
   try {
     console.log('Checking is data exists...');
 
