@@ -1,15 +1,39 @@
-import type { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
+import { S3Client, GetObjectCommand, type GetObjectRequest } from "@aws-sdk/client-s3";
+import csv = require('csv-parser');
+import type { S3Event } from "aws-lambda";
+import type { NodeJsClient } from "@smithy/types";
 
-export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+type IData = {
+  [x: string]: string;
+}
+
+export const handler = async (event: S3Event): Promise<IData[] | void> => {
   try {
-    return {
-      statusCode: 200,
-      body: 'OK'
+    const key = event.Records[0].s3.object.key;
+    const client = new S3Client({ region: process.env.REGION }) as NodeJsClient<S3Client>;
+    const input: GetObjectRequest = {
+      Bucket: process.env.BUCKET,
+      Key: key,
     };
+    const command = new GetObjectCommand(input);
+    const output = await client.send(command);
+    const data: IData[] = [];
+
+    await new Promise((resolve, reject) => {
+      if (!output.Body) return reject(new Error('No data'));
+
+      output.Body.pipe(csv())
+        .on('data', (chunk: IData) => {
+          console.log(chunk);
+          data.push(chunk);
+        })
+        .on('end', resolve)
+        .on('error', reject);
+    });
+
+    console.log('Data:', data);
+    return data;
   } catch (error) {
-    return {
-      statusCode: 500,
-      body: 'Error'
-    };
+    console.error(error);
   }
 };

@@ -63,21 +63,27 @@ export class ImportServiceStack extends cdk.Stack {
       integration: importProductsFileIntegration,
     });
 
-    // ==========================
-    // TODO
-    // ==========================
-
     // Create import file parser lambda function
-    // const importFileParser = new NodejsFunction(this, 'ParserHandler', {
-    //   runtime: lambda.Runtime.NODEJS_20_X,
-    //   entry: path.join(SERVICES_PATH.Import, 'importFileParser.ts'),
-    //   layers: [],
-    //   initialPolicy: [new iam.PolicyStatement({
-    //     effect: iam.Effect.ALLOW,
-    //     actions: ['s3:ObjectCreated:*'],
-    //     resources: [`${RESOURCE}/uploaded`],
-    //   })],
-    //   environment: { BUCKET },
-    // });
+    new NodejsFunction(this, 'ParserHandler', {
+      runtime: lambda.Runtime.NODEJS_20_X,
+      entry: path.join(SERVICES_PATH.Import, 'importFileParser.ts'),
+      layers: [utilsLayer],
+      initialPolicy: [
+        new iam.PolicyStatement({
+          effect: iam.Effect.ALLOW,
+          actions: ['s3:GetObject', 's3:DeleteObject'],
+          resources: [`${RESOURCE}/uploaded/*`],
+        }),
+        new iam.PolicyStatement({
+          effect: iam.Effect.ALLOW,
+          actions: ['s3:PutObject'],
+          resources: [`${RESOURCE}/parsed/*`],
+        })
+      ],
+      environment: {
+        BUCKET,
+        REGION: this.region
+      },
+    });
   }
 }
