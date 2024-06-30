@@ -15,6 +15,11 @@ export class ImportServiceStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
+    const environment = {
+      BUCKET,
+      REGION: this.region
+    }
+
     // Create import service API
     const importApi = new apigw.HttpApi(this, 'ImportApi', {
       corsPreflight: {
@@ -47,10 +52,7 @@ export class ImportServiceStack extends cdk.Stack {
         actions: ['s3:PutObject'],
         resources: [`${RESOURCE}/uploaded/*`],
       })],
-      environment: {
-        BUCKET,
-        REGION: this.region
-      },
+      environment,
     });
 
     // Create import service integration
@@ -80,10 +82,7 @@ export class ImportServiceStack extends cdk.Stack {
           resources: [`${RESOURCE}/parsed/*`],
         })
       ],
-      environment: {
-        BUCKET,
-        REGION: this.region
-      },
+      environment,
     });
   }
 }
