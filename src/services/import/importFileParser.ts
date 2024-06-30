@@ -47,14 +47,15 @@ export const handler = async (event: S3Event): Promise<APIGatewayProxyResult> =>
 
     console.log('Moving parsed file...');
 
+    const source = await client.send(command);
+
     const upload = new Upload({
       client,
       params: {
         Bucket: BUCKET,
         Key: `parsed/${key.replace('uploaded/', '')}`,
-        Body: output.Body,
+        Body: source.Body,
       },
-      leavePartsOnError: false,
     });
 
     await upload.done();
