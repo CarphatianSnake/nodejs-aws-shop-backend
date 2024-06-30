@@ -1,15 +1,17 @@
 import { S3Client, GetObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { Upload } from "@aws-sdk/lib-storage";
 import csv = require('csv-parser');
-import type { S3Event } from "aws-lambda";
+import { CustomError, createResponse } from "/opt/utils";
+import type { APIGatewayProxyResult, S3Event } from "aws-lambda";
 import type { NodeJsClient } from "@smithy/types";
 
 type IData = {
   [x: string]: string;
 }
 
-export const handler = async (event: S3Event): Promise<IData[] | void> => {
+export const handler = async (event: S3Event): Promise<APIGatewayProxyResult> => {
   const { BUCKET, REGION } = process.env;
+  const response = createResponse(['GET', 'OPTIONS']);
 
   try {
     const key = event.Records[0].s3.object.key;
@@ -18,12 +20,15 @@ export const handler = async (event: S3Event): Promise<IData[] | void> => {
       Bucket: BUCKET,
       Key: key,
     };
-    const data: IData[] = []
+    const data: IData[] = [];
+
+    console.log('Getting object stream from bucket...');
+
     const command = new GetObjectCommand(input);
     const output = await client.send(command);
 
     await new Promise((resolve, reject) => {
-      if (!output.Body) return reject(new Error('No data'));
+      if (!output.Body) return reject(new CustomError('No data', 404));
 
       output.Body
         .pipe(csv())
@@ -49,6 +54,7 @@ export const handler = async (event: S3Event): Promise<IData[] | void> => {
         Key: `parsed/${key.replace('uploaded/', '')}`,
         Body: output.Body,
       },
+      leavePartsOnError: false,
     });
 
     await upload.done();
@@ -59,7 +65,19 @@ export const handler = async (event: S3Event): Promise<IData[] | void> => {
     await client.send(deleteCommand);
 
     console.log('Parsed file deleted from /uploaded folder.');
+
+    response.statusCode = 200;
+    response.body = JSON.stringify(data);
+
+    return response;
   } catch (error) {
     console.error(error);
+
+    if (error instanceof CustomError) {
+      response.statusCode = error.statusCode;
+      response.body = JSON.stringify({ message: error.message });
+    }
+
+    return response;
   }
 };
