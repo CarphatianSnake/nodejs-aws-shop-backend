@@ -2,19 +2,20 @@ import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, BatchExecuteStatementCommand, ExecuteStatementCommand } from "@aws-sdk/lib-dynamodb";
 
 import { z } from 'zod';
-import { CustomError, ProductSchema, prepareResponse } from "/opt/utils";
+import { CustomError, ProductSchema, createResponse } from "/opt/utils";
 
 import type { APIGatewayProxyResult } from "aws-lambda";
 
 export const handler = async (): Promise<APIGatewayProxyResult> => {
+  const { PRODUCTS_TABLE, STOCKS_TABLE } = process.env;
   const LIMIT = 12;
 
+  const response = createResponse(['GET', 'OPTIONS']);
+
+  const client = new DynamoDBClient({ region: process.env.AWS_REGION });
+  const documentClient = DynamoDBDocumentClient.from(client);
+
   try {
-    const client = new DynamoDBClient({ region: process.env.AWS_REGION });
-    const documentClient = DynamoDBDocumentClient.from(client);
-
-    const { PRODUCTS_TABLE, STOCKS_TABLE } = process.env;
-
     console.log('Running products scan...');
 
     const scanStatement = `SELECT * FROM "${PRODUCTS_TABLE}"`;
@@ -63,18 +64,16 @@ export const handler = async (): Promise<APIGatewayProxyResult> => {
 
     console.log('Products recieved!');
 
-    const response = prepareResponse(200, productsList);
-    console.log(response);
-    return response;
+    response.statusCode = 200;
+    response.body = JSON.stringify(productsList);
   } catch (error) {
     console.error(error);
     if (error instanceof CustomError) {
-      const response = prepareResponse(404, { message: 'Products not found!' });
-      console.log(response);
-      return response;
+      response.statusCode = 404;
+      response.body = JSON.stringify({ message: 'Products not found!' });
     }
-    const response = prepareResponse(500, { message: 'Something went wrong!' });
-    console.log(response);
-    return response;
   }
+
+  console.log('Response:', response);
+  return response;
 };

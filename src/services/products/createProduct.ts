@@ -5,13 +5,15 @@ import type { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 
 import { z } from 'zod';
 import { v4 as uuidv4 } from 'uuid';
-import { prepareResponse, CustomError, ProductSchema } from '/opt/utils';
+import { CustomError, ProductSchema, createResponse } from '/opt/utils';
 
 export const handler = async ({ body }: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+  const { PRODUCTS_TABLE, STOCKS_TABLE } = process.env;
+
+  const response = createResponse(['POST', 'OPTIONS']);
+
   const client = new DynamoDBClient({ region: process.env.AWS_REGION });
   const documentClient = DynamoDBDocumentClient.from(client);
-
-  const { PRODUCTS_TABLE, STOCKS_TABLE } = process.env;
 
   try {
     console.log('Checking is data exists...');
@@ -68,11 +70,8 @@ export const handler = async ({ body }: APIGatewayProxyEvent): Promise<APIGatewa
 
     console.log('\nProduct successfully added!\n');
 
-    const response = prepareResponse(201, { id, title, description, price, count });
-
-    console.log('Response:', response);
-
-    return response;
+    response.statusCode = 201;
+    response.body = JSON.stringify({ id, title, description, price, count });
   } catch (error) {
     console.error(error);
 
@@ -80,13 +79,11 @@ export const handler = async ({ body }: APIGatewayProxyEvent): Promise<APIGatewa
     const isZodError = error instanceof z.ZodError;
 
     if (isCustomError || isZodError) {
-      const response = prepareResponse(400, { message: 'Invalid product data!' });
-      console.log(response);
-      return response;
+      response.statusCode = 400;
+      response.body = JSON.stringify({ message: 'Invalid product data!' });
     }
-
-    const response = prepareResponse(500, { message: 'Something went wrong!' });
-    console.log(response);
-    return response;
   }
+
+  console.log('Response:', response);
+  return response;
 };

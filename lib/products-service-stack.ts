@@ -6,6 +6,8 @@ import { HttpLambdaIntegration } from 'aws-cdk-lib/aws-apigatewayv2-integrations
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { Construct } from 'constructs';
 import { TableNames } from '@/types';
+import { ALLOWED_HEADERS, LAYERS_PATH, ORIGINS, SERVICES_PATH, API_PATHS } from '@/constants';
+import path = require('node:path');
 
 export class ProductsServiceStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -25,24 +27,24 @@ export class ProductsServiceStack extends cdk.Stack {
 
     // Create lambda layers
     const utilsLayer = new lambda.LayerVersion(this, 'UtilsLayer', {
-      code: lambda.Code.fromAsset('src/layers/utils'),
+      code: lambda.Code.fromAsset(path.join(LAYERS_PATH, 'utils')),
       compatibleRuntimes: [lambda.Runtime.NODEJS_20_X],
     });
 
     const zodLayer = new lambda.LayerVersion(this, 'ZodLayer', {
-      code: lambda.Code.fromAsset('src/layers/zod'),
+      code: lambda.Code.fromAsset(path.join(LAYERS_PATH, 'zod')),
       compatibleRuntimes: [lambda.Runtime.NODEJS_20_X],
     });
 
     const uuidLayer = new lambda.LayerVersion(this, 'UuidLayer', {
-      code: lambda.Code.fromAsset('src/layers/uuid'),
+      code: lambda.Code.fromAsset(path.join(LAYERS_PATH, 'uuid')),
       compatibleRuntimes: [lambda.Runtime.NODEJS_20_X],
     });
 
     // Create lambda functions
     const getProducts = new NodejsFunction(this, 'GetProductsHandler', {
       runtime: lambda.Runtime.NODEJS_20_X,
-      entry: 'src/services/products/getProductsList.ts',
+      entry: path.join(SERVICES_PATH.Products, 'getProductsList.ts'),
       layers: [utilsLayer, zodLayer],
       initialPolicy: [new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
@@ -54,7 +56,7 @@ export class ProductsServiceStack extends cdk.Stack {
 
     const getProductById = new NodejsFunction(this, 'GetProductByIdHandler', {
       runtime: lambda.Runtime.NODEJS_20_X,
-      entry: 'src/services/products/getProductById.ts',
+      entry: path.join(SERVICES_PATH.Products, 'getProductById.ts'),
       layers: [utilsLayer, zodLayer],
       initialPolicy: [new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
@@ -66,7 +68,7 @@ export class ProductsServiceStack extends cdk.Stack {
 
     const createProduct = new NodejsFunction(this, 'CreateProductHandler', {
       runtime: lambda.Runtime.NODEJS_20_X,
-      entry: 'src/services/products/createProduct.ts',
+      entry: path.join(SERVICES_PATH.Products, 'createProduct.ts'),
       layers: [utilsLayer, zodLayer, uuidLayer],
       initialPolicy: [new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
@@ -84,13 +86,13 @@ export class ProductsServiceStack extends cdk.Stack {
     // Create products service API
     const productsApi = new apigw.HttpApi(this, 'ProductsHttpApi', {
       corsPreflight: {
-        allowOrigins: ['https://d3ffym298mm09d.cloudfront.net', 'https://localhost:3000'],
+        allowOrigins: ORIGINS,
         allowMethods: [apigw.CorsHttpMethod.OPTIONS, apigw.CorsHttpMethod.POST, apigw.CorsHttpMethod.GET],
-        allowHeaders: ['Content-Type', 'Authorization', 'Access-Control-Allow-Methods', 'Access-Control-Allow-Origin'],
+        allowHeaders: ALLOWED_HEADERS,
       }
     });
 
-    // Create "dev" stage
+    // Create "dev" stage to products service API
     new apigw.HttpStage(this, 'DevStage', {
       httpApi: productsApi,
       stageName: 'dev',
@@ -99,21 +101,21 @@ export class ProductsServiceStack extends cdk.Stack {
 
     // Add routes to products service API endpoint
     productsApi.addRoutes({
-      path: '/products',
+      path: API_PATHS.Products,
       methods: [apigw.HttpMethod.GET],
       integration: getProductsIntegration,
     });
 
     productsApi.addRoutes({
-      path: '/products/{productId}',
-      methods: [apigw.HttpMethod.GET],
-      integration: getProductByIdIntegration,
+      path: API_PATHS.Products,
+      methods: [apigw.HttpMethod.POST],
+      integration: createProductIntegration,
     });
 
     productsApi.addRoutes({
-      path: '/products',
-      methods: [apigw.HttpMethod.POST],
-      integration: createProductIntegration,
+      path: `${API_PATHS.Products}/{productId}`,
+      methods: [apigw.HttpMethod.GET],
+      integration: getProductByIdIntegration,
     });
   }
 };

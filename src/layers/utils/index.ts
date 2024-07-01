@@ -1,18 +1,19 @@
 import { z } from 'zod';
-import type { HttpResponseBody } from "@/types";
 
-export const prepareResponse = (statusCode: number, body: HttpResponseBody) => {
-  return {
-    statusCode,
-    headers: {
-      "Content-Type": "application/json",
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
-      "Access-Control-Allow-Headers": "Authorization, Access-Control-Allow-Origin, Access-Control-Allow-Methods, Content-Type",
-    },
-    body: JSON.stringify(body),
-  };
-};
+export const createResponse = (
+  methods: ('GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'HEAD' | 'OPTIONS')[],
+  headers?: { [x: string]: string }
+) => ({
+  statusCode: 500,
+  headers: {
+    "Access-Control-Allow-Origin": "https://d3ffym298mm09d.cloudfront.net, http://localhost:3000",
+    "Access-Control-Allow-Headers": "Authorization, Access-Control-Allow-Origin, Access-Control-Allow-Methods, Content-Type",
+    "Access-Control-Allow-Methods": `${methods.join(', ')}`,
+    "Content-Type": "application/json",
+    ...headers,
+  },
+  body: JSON.stringify({ message: 'Something went wrong!' })
+});
 
 export class CustomError extends Error {
   statusCode: number;
