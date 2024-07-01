@@ -24,8 +24,8 @@ export const handler = async (event: S3Event): Promise<APIGatewayProxyResult> =>
 
     console.log('Getting object stream from bucket...');
 
-    const command = new GetObjectCommand(input);
-    const output = await client.send(command);
+    const getCommand = new GetObjectCommand(input);
+    const output = await client.send(getCommand);
 
     await new Promise((resolve, reject) => {
       if (!output.Body) return reject(new CustomError('No data', 404));
@@ -47,13 +47,13 @@ export const handler = async (event: S3Event): Promise<APIGatewayProxyResult> =>
 
     console.log('Moving parsed file...');
 
-    const source = await client.send(command);
+    const source = await client.send(getCommand);
 
     const upload = new Upload({
       client,
       params: {
         Bucket: BUCKET,
-        Key: `parsed/${key.replace('uploaded/', '')}`,
+        Key: key.replace('uploaded', 'parsed'),
         Body: source.Body,
       },
     });

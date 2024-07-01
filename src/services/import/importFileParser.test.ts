@@ -1,9 +1,10 @@
 import { mockClient } from "aws-sdk-client-mock";
-import { S3Client, GetObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, GetObjectCommand, DeleteObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { handler } from "./importFileParser";
 import { s3EventRecordMock } from "@/mock/s3EventRecordMock";
-import fs = require('node:fs');
-import type { S3Event, S3EventRecord } from "aws-lambda";
+import { createReadStream } from 'node:fs';
+import 'aws-sdk-client-mock-jest';
+import type { S3Event } from "aws-lambda";
 import type { StreamingBlobPayloadOutputTypes } from '@smithy/types';
 
 describe('importFilePaser', () => {
@@ -33,11 +34,14 @@ describe('importFilePaser', () => {
     defaultEvent.Records[0] = record;
 
     s3Mock.on(GetObjectCommand).resolves({
-      Body: fs.createReadStream('src/mock/test.csv') as unknown as StreamingBlobPayloadOutputTypes,
+      Body: createReadStream('src/mock/test.csv') as unknown as StreamingBlobPayloadOutputTypes,
     })
 
     const result = await handler(defaultEvent);
 
+    expect(s3Mock).toHaveReceivedCommandTimes(GetObjectCommand, 2);
+    expect(s3Mock).toHaveReceivedCommandTimes(PutObjectCommand, 1);
+    expect(s3Mock).toHaveReceivedCommandTimes(DeleteObjectCommand, 1);
     expect(result).toHaveProperty('statusCode', 200);
   })
 
