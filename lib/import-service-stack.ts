@@ -1,6 +1,7 @@
 import * as cdk from 'aws-cdk-lib';
 import * as apigw from 'aws-cdk-lib/aws-apigatewayv2';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
+import * as lambdaEventSource from 'aws-cdk-lib/aws-lambda-event-sources';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import { HttpLambdaIntegration } from 'aws-cdk-lib/aws-apigatewayv2-integrations';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
@@ -42,6 +43,17 @@ export class ImportServiceStack extends cdk.Stack {
       compatibleRuntimes: [lambda.Runtime.NODEJS_20_X],
     });
 
+    // Create import products file service event source
+    const importProductsFileEventSource = new lambdaEventSource.ApiEventSource(
+      apigw.HttpMethod.GET,
+      API_PATHS.Import,
+      {
+        requestParameters: {
+          'method.request.querystring.name': true,
+        }
+      },
+    );
+
     // Create import products file service lambda function
     const importProductsFile = new NodejsFunction(this, 'ImportHandler', {
       runtime: lambda.Runtime.NODEJS_20_X,
@@ -53,6 +65,7 @@ export class ImportServiceStack extends cdk.Stack {
         resources: [`${RESOURCE}/uploaded/*`],
       })],
       environment,
+      events: [importProductsFileEventSource]
     });
 
     // Create import service integration
