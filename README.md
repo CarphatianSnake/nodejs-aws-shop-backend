@@ -16,9 +16,13 @@ Watches for changes and compile.
 
 Runs tests in console or with coverage.
 
-### `deploy`
+### `deploy <Stack Name>`
 
 Runs stack deployment to AWS.
+
+### `deploy:all`
+
+Runs all stacks deployment to AWS.
 
 ### `destroy`
 
