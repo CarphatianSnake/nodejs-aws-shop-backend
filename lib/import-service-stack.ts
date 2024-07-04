@@ -3,13 +3,14 @@ import * as apigw from 'aws-cdk-lib/aws-apigatewayv2';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as lambdaEventSource from 'aws-cdk-lib/aws-lambda-event-sources';
 import * as iam from 'aws-cdk-lib/aws-iam';
+import * as sqs from 'aws-cdk-lib/aws-sqs';
 import { HttpLambdaIntegration } from 'aws-cdk-lib/aws-apigatewayv2-integrations';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { Construct } from 'constructs';
 import { ALLOWED_HEADERS, API_PATHS, LAYERS_PATH, ORIGINS, SERVICES_PATH } from '@/constants';
 import path = require('node:path');
 
-const BUCKET = 'import-service-bucket-rss-course-carp';
+const S3_BUCKET = 'import-service-bucket-rss-course-carp';
 const RESOURCE = 'arn:aws:s3:::import-service-bucket-rss-course-carp';
 
 export class ImportServiceStack extends cdk.Stack {
@@ -17,7 +18,7 @@ export class ImportServiceStack extends cdk.Stack {
     super(scope, id, props);
 
     const environment = {
-      BUCKET,
+      S3_BUCKET,
       REGION: this.region
     }
 
@@ -78,8 +79,13 @@ export class ImportServiceStack extends cdk.Stack {
       integration: importProductsFileIntegration,
     });
 
+    // Create SQS Import Products Queue
+    const importQueue = new sqs.Queue(this, 'ImportProductsQueue', {
+      queueName: 'import-products-queue-carp',
+    });
+
     // Create import file parser lambda function
-    new NodejsFunction(this, 'ParserHandler', {
+    const importFileParser = new NodejsFunction(this, 'ParserHandler', {
       runtime: lambda.Runtime.NODEJS_20_X,
       entry: path.join(SERVICES_PATH.Import, 'importFileParser.ts'),
       layers: [utilsLayer],
@@ -95,7 +101,13 @@ export class ImportServiceStack extends cdk.Stack {
           resources: [`${RESOURCE}/parsed/*`],
         })
       ],
-      environment,
+      environment: {
+        ...environment,
+        SQS_IMPORT_URL: importQueue.queueUrl
+      },
     });
+
+    // Grant import file parser lambda function to send messages to SQS queue
+    importQueue.grantSendMessages(importFileParser);
   }
 }

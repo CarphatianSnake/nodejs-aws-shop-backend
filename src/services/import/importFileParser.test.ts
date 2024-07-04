@@ -1,5 +1,6 @@
 import { mockClient } from "aws-sdk-client-mock";
 import { S3Client, GetObjectCommand, DeleteObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
+import { SQSClient, SendMessageCommand } from "@aws-sdk/client-sqs";
 import { handler } from "./importFileParser";
 import { s3EventRecordMock } from "@/mock/s3EventRecordMock";
 import { createReadStream } from 'node:fs';
@@ -9,10 +10,11 @@ import type { StreamingBlobPayloadOutputTypes } from '@smithy/types';
 
 describe('importFilePaser', () => {
   const s3Mock = mockClient(S3Client);
+  const sqsMock = mockClient(SQSClient);
 
   process.env = {
     ...process.env,
-    BUCKET: 'mocked-bucket',
+    S3_BUCKET: 'mocked-bucket',
     REGION: 'mocked-region',
   };
 
@@ -23,6 +25,7 @@ describe('importFilePaser', () => {
   beforeEach(() => {
     defaultEvent.Records = [s3EventRecordMock];
     s3Mock.reset();
+    sqsMock.reset();
     jest.spyOn(console, 'log').mockImplementation(() => { });
     jest.spyOn(console, 'error').mockImplementation(() => { });
   })
@@ -36,6 +39,8 @@ describe('importFilePaser', () => {
     s3Mock.on(GetObjectCommand).resolves({
       Body: createReadStream('src/mock/test.csv') as unknown as StreamingBlobPayloadOutputTypes,
     })
+
+    sqsMock.on(SendMessageCommand).resolves({ MessageId: 'id' });
 
     const result = await handler(defaultEvent);
 

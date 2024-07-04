@@ -22,7 +22,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
     const key = `uploaded/${queryStringParameters.name}`;
 
     const command = new PutObjectCommand({
-      Bucket: process.env.BUCKET,
+      Bucket: process.env.S3_BUCKET,
       Key: key,
     });
 
