@@ -1,7 +1,7 @@
 title,description,price,count
 Old car,Red old car,,86
 MTB,Old MTB,901,81
-Smartphone,Adndroid-based smartphone,574,28
-Statue,Small statue of the God of Fire,631
+Smartphone,,574,28
+Statue,Small statue of the God of Fire,631,
 Pistol,Pistol to protect yourself,488,94
 ErrorProduct,This product must throw a Zod error,a,1

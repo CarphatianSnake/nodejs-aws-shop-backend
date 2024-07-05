@@ -1,7 +1,7 @@
 import { mockClient } from "aws-sdk-client-mock";
 import { S3Client, GetObjectCommand, DeleteObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { SQSClient, SendMessageCommand } from "@aws-sdk/client-sqs";
-import { handler } from "./importFileParser";
+import { handler } from "@/services/import/importFileParser";
 import { s3EventRecordMock } from "@/mock/s3EventRecordMock";
 import { createReadStream } from 'node:fs';
 import 'aws-sdk-client-mock-jest';
@@ -21,13 +21,14 @@ describe('importFilePaser', () => {
   const defaultEvent: S3Event = {
     Records: [s3EventRecordMock]
   } as any;
+  
+  jest.spyOn(console, 'log').mockImplementation(() => { });
+  jest.spyOn(console, 'error').mockImplementation(() => { });
 
   beforeEach(() => {
     defaultEvent.Records = [s3EventRecordMock];
     s3Mock.reset();
     sqsMock.reset();
-    jest.spyOn(console, 'log').mockImplementation(() => { });
-    jest.spyOn(console, 'error').mockImplementation(() => { });
   })
 
   it('Should parse data and move file to /parsed folder', async () => {

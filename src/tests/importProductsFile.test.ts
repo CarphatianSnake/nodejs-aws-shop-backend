@@ -1,6 +1,6 @@
 import { mockClient } from "aws-sdk-client-mock";
 import { S3Client } from "@aws-sdk/client-s3";
-import { handler } from "./importProductsFile";
+import { handler } from "@/services/import/importProductsFile";
 import { httpEventMock } from "@/mock/httpEventMock";
 import type { HttpEventRequest } from "@/types";
 
@@ -16,12 +16,13 @@ describe('importProductsFile', () => {
     ...httpEventMock,
     queryStringParameters: null,
   } as any;
+  
+  jest.spyOn(console, 'log').mockImplementation(() => { });
+  jest.spyOn(console, 'error').mockImplementation(() => { });
 
   beforeEach(() => {
     defaultEvent.queryStringParameters = null;
     s3Mock.reset();
-    jest.spyOn(console, 'log').mockImplementation(() => { });
-    jest.spyOn(console, 'error').mockImplementation(() => { });
   });
 
   it('Should return Signed URL', async () => {

@@ -12,7 +12,6 @@ import { Construct } from 'constructs';
 import { ALLOWED_HEADERS, API_PATHS, LAYERS_PATH, ORIGINS, SERVICES_PATH } from '@/constants';
 import path = require('node:path');
 import { TableNames } from '@/types';
-import { S3 } from 'aws-cdk-lib/aws-ses-actions';
 
 const S3_BUCKET = 'import-service-bucket-rss-course-carp';
 const RESOURCE = 'arn:aws:s3:::import-service-bucket-rss-course-carp';
@@ -20,11 +19,6 @@ const RESOURCE = 'arn:aws:s3:::import-service-bucket-rss-course-carp';
 export class ImportServiceStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
-
-    // const environment = {
-    // S3_BUCKET,
-    // REGION: this.region
-    // }
 
     const DYNAMO_TABLE_ARN = `arn:aws:dynamodb:${this.region}:${this.account}:table/`;
 

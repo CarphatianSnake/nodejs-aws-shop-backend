@@ -1,5 +1,5 @@
 import { CustomError } from '/opt/utils';
-import { generatePutTransact } from './generatePutTransact';
+import { generatePutTransact } from '@/utils/generatePutTransact';
 import { products } from '@/mock/products';
 import { TableNames } from '@/types';
 

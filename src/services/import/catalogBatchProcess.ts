@@ -1,57 +1,32 @@
 import { SNSClient, PublishCommand } from '@aws-sdk/client-sns';
-import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { DynamoDBDocumentClient, ExecuteTransactionCommand } from '@aws-sdk/lib-dynamodb';
 import { z } from "zod";
 import { v4 as uuidv4 } from 'uuid';
-import { ProductSchema } from "/opt/utils";
+import { ProductSchema, transactProduct } from "/opt/utils";
 import type { SQSEvent } from "aws-lambda";
 
 export const handler = async ({ Records }: SQSEvent): Promise<void> => {
-  const { AWS_REGION, SNS_ARN, PRODUCTS_TABLE, STOCKS_TABLE } = process.env
+  const { AWS_REGION, SNS_ARN, PRODUCTS_TABLE, STOCKS_TABLE } = process.env;
   const snsClient = new SNSClient({ region: AWS_REGION });
-  const client = new DynamoDBClient({ region: AWS_REGION });
-  const documentClient = DynamoDBDocumentClient.from(client);
 
-  for (const record of Records) {
-    const { body } = record;
+  for (const { body } of Records) {
     const data = JSON.parse(body);
 
     try {
       console.log('Validating data...');
 
-      const id = uuidv4();
-
-      const product = ProductSchema.parse({
-        id,
+      const product = ProductSchema.required().parse({
+        id: uuidv4(),
         ...data,
       });
 
-      console.log('Run transact...');
-
-      const productStatement = {
-        Statement: `INSERT INTO "${PRODUCTS_TABLE}" VALUE {
-          'id': '${id}',
-          'title': '${product.title}',
-          'description': '${product.description}',
-          'price': ${product.price}
-        }`,
-      };
-
-      const stockStatement = {
-        Statement: `INSERT INTO "${STOCKS_TABLE}" VALUE {
-          'product_id': '${id}',
-          'count': ${product.count}
-        }`,
-      };
-
-      await documentClient.send(new ExecuteTransactionCommand({
-        TransactStatements: [
-          productStatement,
-          stockStatement,
-        ],
-      }));
-
-      console.log('Product successfully added to DynamoDB');
+      await transactProduct({
+        product,
+        region: AWS_REGION,
+        tables: {
+          PRODUCTS_TABLE,
+          STOCKS_TABLE,
+        }
+      });
 
       console.log('Sending SNS message...');
 
@@ -69,7 +44,7 @@ export const handler = async ({ Records }: SQSEvent): Promise<void> => {
 
       const response = await snsClient.send(publishCommand);
 
-      console.log('Message was', response.MessageId);
+      console.log('Message sent', response.MessageId);
       console.log('Message data', product);
 
     } catch (error) {
@@ -98,8 +73,8 @@ export const handler = async ({ Records }: SQSEvent): Promise<void> => {
 
       const response = await snsClient.send(publishCommand);
 
-      console.log('Message was sent', response.MessageId);
-      console.log('Error', error);
+      console.log('Message sent', response.MessageId);
+      console.log(error);
     }
   }
-}
+};
