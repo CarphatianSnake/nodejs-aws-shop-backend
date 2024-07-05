@@ -14,8 +14,11 @@ const props: cdk.StackProps = {
   },
 };
 
-new ProductsServiceStack(app, 'ShopBackendStack', props);
+const productServiceStack = new ProductsServiceStack(app, 'ShopBackendStack', props);
 
-new ImportServiceStack(app, 'ImportServiceStack', props);
+new ImportServiceStack(app, 'ImportServiceStack', {
+  ...props,
+  CATALOG_ITEMS_QUEUE: productServiceStack.CatalogItemsQueue,
+});
 
 app.synth();

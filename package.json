@@ -13,6 +13,7 @@
     "deploy": "npm run test:coverage && cdk deploy",
     "deploy:all": "npm run test:coverage && cdk deploy --all",
     "destroy": "cdk destroy",
+    "destroy:all": "cdk destroy --all",
     "ddb:fill": "ts-node scripts/runFillTables.ts"
   },
   "devDependencies": {
