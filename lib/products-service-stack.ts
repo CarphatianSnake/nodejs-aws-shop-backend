@@ -139,18 +139,12 @@ export class ProductsServiceStack extends cdk.Stack {
     const createProductTopic = new sns.Topic(this, 'ImportTopic');
 
     // Add SNS import service topic subscriptions
-    createProductTopic.addSubscription(new snsSubscriptions.EmailSubscription(process.env.SNS_SUB_SUCCESS_EMAIL!, {
-      filterPolicy: {
-        status: sns.SubscriptionFilter.stringFilter({
-          allowlist: ['success'],
-        }),
-      }
-    }));
+    createProductTopic.addSubscription(new snsSubscriptions.EmailSubscription(process.env.SNS_SUB_MAIN_EMAIL!));
 
-    createProductTopic.addSubscription(new snsSubscriptions.EmailSubscription(process.env.SNS_SUB_FAIL_EMAIL!, {
+    createProductTopic.addSubscription(new snsSubscriptions.EmailSubscription(process.env.SNS_SUB_SECONDARY_EMAIL!, {
       filterPolicy: {
-        status: sns.SubscriptionFilter.stringFilter({
-          allowlist: ['error'],
+        price: sns.SubscriptionFilter.numericFilter({
+          allowlist: [0],
         }),
       },
     }));

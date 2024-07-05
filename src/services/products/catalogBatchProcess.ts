@@ -31,13 +31,13 @@ export const handler = async ({ Records }: SQSEvent): Promise<void> => {
       console.log('Sending SNS message...');
 
       const publishCommand = new PublishCommand({
+        Subject: 'Product successfully added',
         Message: JSON.stringify(product),
         TopicArn: SNS_ARN,
-        Subject: 'Product successfully added',
         MessageAttributes: {
-          status: {
-            DataType: 'String',
-            StringValue: 'success',
+          price: {
+            DataType: 'Number',
+            StringValue: product.price.toString(),
           },
         },
       });
@@ -51,25 +51,19 @@ export const handler = async ({ Records }: SQSEvent): Promise<void> => {
       console.error(error);
 
       const publishCommand = new PublishCommand({
-        Message: '',
-        MessageAttributes: {
-          status: {
-            DataType: 'String',
-            StringValue: 'error',
-          },
-        },
-        TopicArn: SNS_ARN,
         Subject: 'Failed to add product',
+        Message: '',
+        TopicArn: SNS_ARN,
       });
 
       if (error instanceof z.ZodError) {
         publishCommand.input.Message = JSON.stringify({
-          data,
+          ...data,
           errors: error.errors,
         });
       }
 
-      publishCommand.input.Message = JSON.stringify({ data, error });
+      publishCommand.input.Message = JSON.stringify({ ...data, error });
 
       const response = await snsClient.send(publishCommand);
 
