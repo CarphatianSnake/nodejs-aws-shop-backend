@@ -34,3 +34,12 @@ export type PutTransact<T extends Omit<Product, 'count'> | Stock> = {
     ExpressionAttributeValues?: Record<string, NativeAttributeValue>;
   };
 };
+
+export type TransactProps = {
+  product: Product,
+  region: string | undefined,
+  tables: {
+    PRODUCTS_TABLE: string | undefined,
+    STOCKS_TABLE: string | undefined,
+  }
+}

@@ -1,7 +1,7 @@
 import { DynamoDBClient, ExecuteTransactionCommand } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
 import { z } from 'zod';
-import type { Product } from '@/types';
+import type { TransactProps } from '@/types';
 
 export const createResponse = (
   methods: ('GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'HEAD' | 'OPTIONS')[],
@@ -33,15 +33,6 @@ export const ProductSchema = z.object({
   price: z.coerce.number().nonnegative().safe().default(0).optional(),
   count: z.coerce.number().nonnegative().safe().default(0).optional(),
 });
-
-type TransactProps = {
-  product: Product,
-  region: string | undefined,
-  tables: {
-    PRODUCTS_TABLE: string | undefined,
-    STOCKS_TABLE: string | undefined,
-  }
-}
 
 export const transactProduct = async ({ product, region, tables }: TransactProps): Promise<void> => {
   const client = new DynamoDBClient({ region });
