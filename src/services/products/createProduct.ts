@@ -8,11 +8,11 @@ import { v4 as uuidv4 } from 'uuid';
 import { CustomError, ProductSchema, createResponse } from '/opt/utils';
 
 export const handler = async ({ body }: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-  const { PRODUCTS_TABLE, STOCKS_TABLE } = process.env;
+  const { PRODUCTS_TABLE, STOCKS_TABLE, AWS_REGION } = process.env;
 
   const response = createResponse(['POST', 'OPTIONS']);
 
-  const client = new DynamoDBClient({ region: process.env.AWS_REGION });
+  const client = new DynamoDBClient({ region: AWS_REGION });
   const documentClient = DynamoDBDocumentClient.from(client);
 
   try {
@@ -27,13 +27,16 @@ export const handler = async ({ body }: APIGatewayProxyEvent): Promise<APIGatewa
     console.log('Validating data...');
     console.log(data);
 
-    const { title, description, price, count } = ProductSchema.omit({ id: true }).required().parse(data);
-
-    console.log('Validated data:', { title, description, price, count });
-
     console.log('Generating id for a new product...');
 
     const id = uuidv4();
+
+    const { title, description, price, count } = ProductSchema.required().parse({
+      id,
+      ...data
+    });
+
+    console.log('Validated data:', { title, description, price, count });
 
     console.log('Product id:', { id });
 

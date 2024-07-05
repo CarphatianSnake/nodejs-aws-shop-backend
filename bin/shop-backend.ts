@@ -3,6 +3,7 @@ import 'source-map-support/register';
 import * as cdk from 'aws-cdk-lib';
 import { ProductsServiceStack } from '../lib/products-service-stack';
 import { ImportServiceStack } from 'lib/import-service-stack';
+import 'dotenv/config';
 
 const app = new cdk.App();
 

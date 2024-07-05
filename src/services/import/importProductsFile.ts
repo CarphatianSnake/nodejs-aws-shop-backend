@@ -6,7 +6,7 @@ import type { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   const { queryStringParameters } = event;
   const response = createResponse(['GET', 'OPTIONS'], { 'Content-Type': 'text/plain' });
-  const client = new S3Client({ region: process.env.REGION });
+  const client = new S3Client({ region: process.env.AWS_REGION });
 
   try {
     console.log('Checking file name...');

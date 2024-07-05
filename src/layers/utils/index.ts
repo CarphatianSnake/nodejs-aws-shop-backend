@@ -27,6 +27,6 @@ export const ProductSchema = z.object({
   id: z.string().uuid(),
   title: z.string(),
   description: z.string().default('').optional(),
-  price: z.number().min(0).default(0).optional(),
-  count: z.number().min(0).default(0).optional(),
+  price: z.coerce.number().nonnegative().safe().default(0).optional(),
+  count: z.coerce.number().nonnegative().safe().default(0).optional(),
 });

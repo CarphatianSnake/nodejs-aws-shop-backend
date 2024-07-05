@@ -11,13 +11,13 @@ type IData = {
 }
 
 export const handler = async (event: S3Event): Promise<APIGatewayProxyResult> => {
-  const { S3_BUCKET, REGION, SQS_IMPORT_URL } = process.env;
+  const { S3_BUCKET, AWS_REGION, SQS_IMPORT_URL } = process.env;
   const response = createResponse(['GET', 'OPTIONS']);
 
   try {
     const key = event.Records[0].s3.object.key;
-    const s3Client = new S3Client({ region: REGION }) as NodeJsClient<S3Client>;
-    const sqsClient = new SQSClient({ region: REGION });
+    const s3Client = new S3Client({ region: AWS_REGION }) as NodeJsClient<S3Client>;
+    const sqsClient = new SQSClient({ region: AWS_REGION });
     const input = {
       Bucket: S3_BUCKET,
       Key: key,

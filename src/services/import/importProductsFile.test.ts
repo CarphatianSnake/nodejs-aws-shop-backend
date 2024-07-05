@@ -9,7 +9,7 @@ describe('importProductsFile', () => {
   process.env = {
     ...process.env,
     S3_BUCKET: 'mocked-bucket',
-    REGION: 'mocked-region',
+    AWS_REGION: 'mocked-region',
   };
 
   const defaultEvent: HttpEventRequest = {
@@ -35,7 +35,7 @@ describe('importProductsFile', () => {
 
     expect(result).toHaveProperty('statusCode', 200);
     expect(result.headers).toHaveProperty('Content-Type', 'text/plain');
-    expect(result.body).toContain(`https://${process.env.S3_BUCKET}.s3.${process.env.REGION}.amazonaws.com/uploaded/${FILENAME}`);
+    expect(result.body).toContain(`https://${process.env.S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/uploaded/${FILENAME}`);
   })
 
   it('Should return error 404 file not found', async () => {

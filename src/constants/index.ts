@@ -1,3 +1,4 @@
+import { TableNames } from '@/types';
 import path = require('node:path');
 
 export const ORIGINS = ['https://d3ffym298mm09d.cloudfront.net', 'http://localhost:3000'];
