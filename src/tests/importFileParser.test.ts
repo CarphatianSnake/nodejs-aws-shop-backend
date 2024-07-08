@@ -1,7 +1,7 @@
 import { mockClient } from "aws-sdk-client-mock";
 import { S3Client, GetObjectCommand, DeleteObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { SQSClient, SendMessageCommand } from "@aws-sdk/client-sqs";
-import { handler } from "@/services/import/importFileParser";
+import { handler } from "@services/import/lambdas/importFileParser";
 import { s3EventRecordMock } from "@/mock/s3EventRecordMock";
 import { createReadStream } from 'node:fs';
 import 'aws-sdk-client-mock-jest';

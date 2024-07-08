@@ -5,6 +5,7 @@ import * as lambdaEventSource from 'aws-cdk-lib/aws-lambda-event-sources';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as sqs from 'aws-cdk-lib/aws-sqs';
 import { HttpLambdaIntegration } from 'aws-cdk-lib/aws-apigatewayv2-integrations';
+import { HttpLambdaAuthorizer } from 'aws-cdk-lib/aws-apigatewayv2-authorizers';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { Construct } from 'constructs';
 import { ALLOWED_HEADERS, API_PATHS, LAYERS_PATH, ORIGINS, SERVICES_PATH } from '@/constants';
@@ -57,7 +58,7 @@ export class ImportServiceStack extends cdk.Stack {
     // Create import products file service lambda function
     const importProductsFile = new NodejsFunction(this, 'ImportHandler', {
       runtime: lambda.Runtime.NODEJS_20_X,
-      entry: path.join(SERVICES_PATH.Import, 'importProductsFile.ts'),
+      entry: path.join(SERVICES_PATH.Import, 'lambdas', 'importProductsFile.ts'),
       layers: [utilsLayer],
       initialPolicy: [new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
@@ -67,23 +68,32 @@ export class ImportServiceStack extends cdk.Stack {
       environment: {
         S3_BUCKET,
       },
-      events: [importProductsFileEventSource]
+      events: [importProductsFileEventSource],
     });
 
     // Create import service integration
     const importProductsFileIntegration = new HttpLambdaIntegration('ImportProductsFileIntegration', importProductsFile);
+
+    // Import basic authorization lambda function
+    const basicAuthorizer = NodejsFunction.fromFunctionArn(this, 'BasicAuthHandler', cdk.Fn.importValue('basicAuthArn'));
+
+    // Create http lambda authorizer
+    const basicImportAuthorizer = new HttpLambdaAuthorizer('BasicImportAuthorizer', basicAuthorizer, {
+      resultsCacheTtl: cdk.Duration.seconds(0),
+    });
 
     // Add route for import service API
     importApi.addRoutes({
       path: API_PATHS.Import,
       methods: [apigw.HttpMethod.GET],
       integration: importProductsFileIntegration,
+      authorizer: basicImportAuthorizer,
     });
 
     // Create import file parser lambda function
     const importFileParser = new NodejsFunction(this, 'ParserHandler', {
       runtime: lambda.Runtime.NODEJS_20_X,
-      entry: path.join(SERVICES_PATH.Import, 'importFileParser.ts'),
+      entry: path.join(SERVICES_PATH.Import, 'lambdas', 'importFileParser.ts'),
       layers: [utilsLayer],
       initialPolicy: [
         new iam.PolicyStatement({

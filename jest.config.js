@@ -6,6 +6,7 @@ module.exports = {
   },
   moduleNameMapper: {
     "^@/(.*)$": "<rootDir>/src/$1",
+    "^@services/(.*)$": "<rootDir>/services/$1",
     "^/opt(.*)$": "<rootDir>/src/layers/$1",
   },
 };

@@ -50,7 +50,7 @@ export class ProductsServiceStack extends cdk.Stack {
     // Create lambda functions
     const getProducts = new NodejsFunction(this, 'GetProductsHandler', {
       runtime: lambda.Runtime.NODEJS_20_X,
-      entry: path.join(SERVICES_PATH.Products, 'getProductsList.ts'),
+      entry: path.join(SERVICES_PATH.Products, 'lambdas', 'getProductsList.ts'),
       layers: [utilsLayer, zodLayer],
       initialPolicy: [new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
@@ -62,7 +62,7 @@ export class ProductsServiceStack extends cdk.Stack {
 
     const getProductById = new NodejsFunction(this, 'GetProductByIdHandler', {
       runtime: lambda.Runtime.NODEJS_20_X,
-      entry: path.join(SERVICES_PATH.Products, 'getProductById.ts'),
+      entry: path.join(SERVICES_PATH.Products, 'lambdas', 'getProductById.ts'),
       layers: [utilsLayer, zodLayer],
       initialPolicy: [new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
@@ -74,7 +74,7 @@ export class ProductsServiceStack extends cdk.Stack {
 
     const createProduct = new NodejsFunction(this, 'CreateProductHandler', {
       runtime: lambda.Runtime.NODEJS_20_X,
-      entry: path.join(SERVICES_PATH.Products, 'createProduct.ts'),
+      entry: path.join(SERVICES_PATH.Products, 'lambdas', 'createProduct.ts'),
       layers: [utilsLayer, zodLayer, uuidLayer],
       initialPolicy: [new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
@@ -152,7 +152,7 @@ export class ProductsServiceStack extends cdk.Stack {
     // Create catalog batch process lambda function
     const catalogBatchProcess = new NodejsFunction(this, 'CatalogBatchProcessHandler', {
       runtime: lambda.Runtime.NODEJS_20_X,
-      entry: path.join(SERVICES_PATH.Products, 'catalogBatchProcess.ts'),
+      entry: path.join(SERVICES_PATH.Products, 'lambdas', 'catalogBatchProcess.ts'),
       layers: [utilsLayer, uuidLayer, zodLayer],
       initialPolicy: [new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,

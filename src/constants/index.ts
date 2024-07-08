@@ -6,11 +6,12 @@ export const ALLOWED_HEADERS = ['Content-Type', 'Authorization', 'Access-Control
 
 export const LAYERS_PATH = path.join('src', 'layers');
 
-const SERVICES_PATH_BASE = path.join('src', 'services');
+const SERVICES = path.join('services');
 
 export const SERVICES_PATH = {
-  Products: path.join(SERVICES_PATH_BASE, 'products'),
-  Import: path.join(SERVICES_PATH_BASE, 'import'),
+  Products: path.join(SERVICES, 'products'),
+  Import: path.join(SERVICES, 'import'),
+  Authorization: path.join(SERVICES, 'authorization'),
 };
 
 export const API_PATHS = {
