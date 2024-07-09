@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import 'source-map-support/register';
 import * as cdk from 'aws-cdk-lib';
+import { AuthorizationServiceStack } from '@services/authorization/lib/authorization-service-stack';
 import { ProductsServiceStack } from '@services/products/lib/products-service-stack';
 import { ImportServiceStack } from '@services/import/lib/import-service-stack';
 import 'dotenv/config';
@@ -14,11 +15,8 @@ const props: cdk.StackProps = {
   },
 };
 
-const productServiceStack = new ProductsServiceStack(app, 'ShopBackendStack', props);
-
-new ImportServiceStack(app, 'ImportServiceStack', {
-  ...props,
-  CATALOG_ITEMS_QUEUE: productServiceStack.CatalogItemsQueue,
-});
+new AuthorizationServiceStack(app, 'AuthorizationServiceStack', props);
+new ProductsServiceStack(app, 'ShopBackendStack', props);
+new ImportServiceStack(app, 'ImportServiceStack', props);
 
 app.synth();

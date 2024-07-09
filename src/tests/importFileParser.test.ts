@@ -16,6 +16,7 @@ describe('importFilePaser', () => {
     ...process.env,
     S3_BUCKET: 'mocked-bucket',
     AWS_REGION: 'mocked-region',
+    QUEUE_URL: 'mocked-queue-arn',
   };
 
   const defaultEvent: S3Event = {
