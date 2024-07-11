@@ -28,6 +28,10 @@ Runs all stacks deployment to AWS.
 
 Destroys stack on AWS.
 
+### `destroy:all`
+
+Destroys all stacks on AWS.
+
 ### `ddb:fill`
 
 Runs script to fill database tables with mocked products data and randomly generated stocks.

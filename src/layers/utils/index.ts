@@ -1,4 +1,7 @@
+import { DynamoDBClient, ExecuteTransactionCommand } from '@aws-sdk/client-dynamodb';
+import { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
 import { z } from 'zod';
+import type { TransactProps } from '@/types';
 
 export const createResponse = (
   methods: ('GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'HEAD' | 'OPTIONS')[],
@@ -27,6 +30,38 @@ export const ProductSchema = z.object({
   id: z.string().uuid(),
   title: z.string(),
   description: z.string().default('').optional(),
-  price: z.number().min(0).default(0).optional(),
-  count: z.number().min(0).default(0).optional(),
+  price: z.coerce.number().nonnegative().safe().default(0).optional(),
+  count: z.coerce.number().nonnegative().safe().default(0).optional(),
 });
+
+export const transactProduct = async ({ product, region, tables }: TransactProps): Promise<void> => {
+  const client = new DynamoDBClient({ region });
+  const documentClient = DynamoDBDocumentClient.from(client);
+
+  console.log('Run transact...');
+
+  const productStatement = {
+    Statement: `INSERT INTO "${tables.PRODUCTS_TABLE}" VALUE {
+      'id': '${product.id}',
+      'title': '${product.title}',
+      'description': '${product.description}',
+      'price': ${product.price}
+    }`,
+  };
+
+  const stockStatement = {
+    Statement: `INSERT INTO "${tables.STOCKS_TABLE}" VALUE {
+      'product_id': '${product.id}',
+      'count': ${product.count}
+    }`,
+  };
+
+  await documentClient.send(new ExecuteTransactionCommand({
+    TransactStatements: [
+      productStatement,
+      stockStatement,
+    ],
+  }));
+
+  console.log('Product successfully added!');
+};

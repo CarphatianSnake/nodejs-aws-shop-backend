@@ -1,7 +1,7 @@
 import { mockClient } from "aws-sdk-client-mock";
 import { DynamoDBDocumentClient, BatchExecuteStatementCommand, ExecuteStatementCommand } from "@aws-sdk/lib-dynamodb";
 
-import { handler } from "./getProductsList";
+import { handler } from "@/services/products/getProductsList";
 import { products } from "@/mock/products";
 import { generateStocksData } from "@/utils/generateStocksData";
 import { TableNames } from "@/types";
@@ -14,10 +14,11 @@ describe('getProducts handler', () => {
     STOCKS_TABLE: TableNames.Stocks,
   };
 
+  jest.spyOn(console, 'log').mockImplementation(() => { });
+  jest.spyOn(console, 'error').mockImplementation(() => { });
+  
   beforeEach(() => {
     ddbMock.reset();
-    jest.spyOn(console, 'log').mockImplementation(() => { });
-    jest.spyOn(console, 'error').mockImplementation(() => { });
   });
 
   it("Should return products array", async () => {

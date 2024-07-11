@@ -1,16 +1,17 @@
 import { mockClient } from "aws-sdk-client-mock";
 import { DynamoDBDocumentClient, TransactWriteCommand } from "@aws-sdk/lib-dynamodb";
 
-import { fillDdbTables } from "./fillTables";
+import { fillDdbTables } from "@/scripts/fillTables";
 import { response } from "@/mock/response";
 
 describe('fillDdbTables', () => {
   const ddbMock = mockClient(DynamoDBDocumentClient);
+  
+  jest.spyOn(console, 'log').mockImplementation(() => { });
+  jest.spyOn(console, 'error').mockImplementation(() => { });
 
   beforeEach(() => {
     ddbMock.reset();
-    jest.spyOn(console, 'log').mockImplementation(() => { });
-    jest.spyOn(console, 'error').mockImplementation(() => { });
   });
 
   it('Should successfully fill tables', async () => {

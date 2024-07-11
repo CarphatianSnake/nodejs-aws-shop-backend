@@ -3,23 +3,23 @@ import * as apigw from 'aws-cdk-lib/aws-apigatewayv2';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as lambdaEventSource from 'aws-cdk-lib/aws-lambda-event-sources';
 import * as iam from 'aws-cdk-lib/aws-iam';
+import * as sqs from 'aws-cdk-lib/aws-sqs';
 import { HttpLambdaIntegration } from 'aws-cdk-lib/aws-apigatewayv2-integrations';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { Construct } from 'constructs';
 import { ALLOWED_HEADERS, API_PATHS, LAYERS_PATH, ORIGINS, SERVICES_PATH } from '@/constants';
 import path = require('node:path');
 
-const BUCKET = 'import-service-bucket-rss-course-carp';
+const S3_BUCKET = 'import-service-bucket-rss-course-carp';
 const RESOURCE = 'arn:aws:s3:::import-service-bucket-rss-course-carp';
 
-export class ImportServiceStack extends cdk.Stack {
-  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
-    super(scope, id, props);
+interface ImportServiceStackProps extends cdk.StackProps {
+  CATALOG_ITEMS_QUEUE: sqs.Queue;
+}
 
-    const environment = {
-      BUCKET,
-      REGION: this.region
-    }
+export class ImportServiceStack extends cdk.Stack {
+  constructor(scope: Construct, id: string, props: ImportServiceStackProps) {
+    super(scope, id, props);
 
     // Create import service API
     const importApi = new apigw.HttpApi(this, 'ImportApi', {
@@ -64,7 +64,9 @@ export class ImportServiceStack extends cdk.Stack {
         actions: ['s3:PutObject'],
         resources: [`${RESOURCE}/uploaded/*`],
       })],
-      environment,
+      environment: {
+        S3_BUCKET,
+      },
       events: [importProductsFileEventSource]
     });
 
@@ -79,7 +81,7 @@ export class ImportServiceStack extends cdk.Stack {
     });
 
     // Create import file parser lambda function
-    new NodejsFunction(this, 'ParserHandler', {
+    const importFileParser = new NodejsFunction(this, 'ParserHandler', {
       runtime: lambda.Runtime.NODEJS_20_X,
       entry: path.join(SERVICES_PATH.Import, 'importFileParser.ts'),
       layers: [utilsLayer],
@@ -95,7 +97,13 @@ export class ImportServiceStack extends cdk.Stack {
           resources: [`${RESOURCE}/parsed/*`],
         })
       ],
-      environment,
+      environment: {
+        S3_BUCKET,
+        SQS_IMPORT_URL: props.CATALOG_ITEMS_QUEUE.queueUrl,
+      },
     });
+
+    // Grant import file parser lambda function to send messages to SQS queue
+    props.CATALOG_ITEMS_QUEUE.grantSendMessages(importFileParser);
   }
 }

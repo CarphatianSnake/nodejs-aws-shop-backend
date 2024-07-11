@@ -1,17 +1,18 @@
-import { mockClient } from "aws-sdk-client-mock";
-import { DynamoDBDocumentClient, ExecuteTransactionCommand } from "@aws-sdk/lib-dynamodb";
-
-import { handler } from "./createProduct";
+import { handler } from "@/services/products/createProduct";
 import { httpEventMock } from "@/mock/httpEventMock";
+import * as utils from "@/layers/utils";
 import { TableNames, type HttpEventRequest } from "@/types";
 
 describe('createProduct handler', () => {
-  const ddbMock = mockClient(DynamoDBDocumentClient);
   process.env = {
     ...process.env,
     PRODUCTS_TABLE: TableNames.Products,
     STOCKS_TABLE: TableNames.Stocks,
   };
+
+  const transactSpy = jest.spyOn(utils, 'transactProduct').mockImplementation(() => Promise.resolve());
+  jest.spyOn(console, 'log').mockImplementation(() => { });
+  jest.spyOn(console, 'error').mockImplementation(() => { });
 
   const defaultEvent: HttpEventRequest = {
     ...httpEventMock
@@ -19,9 +20,7 @@ describe('createProduct handler', () => {
 
   beforeEach(() => {
     defaultEvent.body = null;
-    ddbMock.reset();
-    jest.spyOn(console, 'log').mockImplementation(() => { });
-    jest.spyOn(console, 'error').mockImplementation(() => { });
+    transactSpy.mockClear();
   });
 
   it('Should successfully add product with full data to database', async () => {
@@ -101,7 +100,7 @@ describe('createProduct handler', () => {
       count: 4,
     };
 
-    ddbMock.on(ExecuteTransactionCommand).rejects();
+    transactSpy.mockRejectedValue(new Error('Test error'));
 
     defaultEvent.body = JSON.stringify(product);
 

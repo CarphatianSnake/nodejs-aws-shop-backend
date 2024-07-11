@@ -1,6 +1,6 @@
 import { mockClient } from "aws-sdk-client-mock";
 import { S3Client } from "@aws-sdk/client-s3";
-import { handler } from "./importProductsFile";
+import { handler } from "@/services/import/importProductsFile";
 import { httpEventMock } from "@/mock/httpEventMock";
 import type { HttpEventRequest } from "@/types";
 
@@ -8,20 +8,21 @@ describe('importProductsFile', () => {
   const s3Mock = mockClient(S3Client);
   process.env = {
     ...process.env,
-    BUCKET: 'mocked-bucket',
-    REGION: 'mocked-region',
+    S3_BUCKET: 'mocked-bucket',
+    AWS_REGION: 'mocked-region',
   };
 
   const defaultEvent: HttpEventRequest = {
     ...httpEventMock,
     queryStringParameters: null,
   } as any;
+  
+  jest.spyOn(console, 'log').mockImplementation(() => { });
+  jest.spyOn(console, 'error').mockImplementation(() => { });
 
   beforeEach(() => {
     defaultEvent.queryStringParameters = null;
     s3Mock.reset();
-    jest.spyOn(console, 'log').mockImplementation(() => { });
-    jest.spyOn(console, 'error').mockImplementation(() => { });
   });
 
   it('Should return Signed URL', async () => {
@@ -35,7 +36,7 @@ describe('importProductsFile', () => {
 
     expect(result).toHaveProperty('statusCode', 200);
     expect(result.headers).toHaveProperty('Content-Type', 'text/plain');
-    expect(result.body).toContain(`https://${process.env.BUCKET}.s3.${process.env.REGION}.amazonaws.com/uploaded/${FILENAME}`);
+    expect(result.body).toContain(`https://${process.env.S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/uploaded/${FILENAME}`);
   })
 
   it('Should return error 404 file not found', async () => {

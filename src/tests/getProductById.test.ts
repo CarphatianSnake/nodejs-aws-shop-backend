@@ -1,7 +1,7 @@
 import { mockClient } from "aws-sdk-client-mock";
 import { DynamoDBDocumentClient, BatchExecuteStatementCommand } from "@aws-sdk/lib-dynamodb";
 
-import { handler } from "./getProductById";
+import { handler } from "@/services/products/getProductById";
 import { products } from "@/mock/products";
 import { httpEventMock } from "@/mock/httpEventMock";
 import { TableNames, type HttpEventRequest } from "@/types";
@@ -18,11 +18,12 @@ describe('getProductById handler', () => {
     STOCKS_TABLE: TableNames.Stocks,
   };
 
+  jest.spyOn(console, 'log').mockImplementation(() => { });
+  jest.spyOn(console, 'error').mockImplementation(() => { });
+
   beforeEach(() => {
     defaultEvent.pathParameters = {};
     ddbMock.reset();
-    jest.spyOn(console, 'log').mockImplementation(() => { });
-    jest.spyOn(console, 'error').mockImplementation(() => { });
   })
 
   it("Should return correct product by id", async () => {
