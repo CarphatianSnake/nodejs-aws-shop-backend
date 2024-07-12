@@ -3,9 +3,8 @@ import * as apigw from 'aws-cdk-lib/aws-apigatewayv2';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as lambdaEventSource from 'aws-cdk-lib/aws-lambda-event-sources';
 import * as iam from 'aws-cdk-lib/aws-iam';
-import * as sqs from 'aws-cdk-lib/aws-sqs';
 import { HttpLambdaIntegration } from 'aws-cdk-lib/aws-apigatewayv2-integrations';
-// import { HttpLambdaAuthorizer } from 'aws-cdk-lib/aws-apigatewayv2-authorizers';
+import { HttpLambdaAuthorizer, HttpLambdaResponseType } from 'aws-cdk-lib/aws-apigatewayv2-authorizers';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { Construct } from 'constructs';
 import { ALLOWED_HEADERS, API_PATHS, LAYERS_PATH, ORIGINS, SERVICES_PATH } from '@/constants';
@@ -47,7 +46,7 @@ export class ImportServiceStack extends cdk.Stack {
       {
         requestParameters: {
           'method.request.querystring.name': true,
-        }
+        },
       },
     );
 
@@ -71,19 +70,23 @@ export class ImportServiceStack extends cdk.Stack {
     const importProductsFileIntegration = new HttpLambdaIntegration('ImportProductsFileIntegration', importProductsFile);
 
     // Import basic authorization lambda function
-    // const basicAuthorizer = NodejsFunction.fromFunctionArn(this, 'BasicAuthHandler', cdk.Fn.importValue('basicAuthArn'));
+    const basicAuthorizer = NodejsFunction.fromFunctionAttributes(this, 'BasicAuthHandler', {
+      functionArn: cdk.Fn.importValue('basicAuthArn'),
+      sameEnvironment: true,
+    });
 
     // Create http lambda authorizer
-    // const basicImportAuthorizer = new HttpLambdaAuthorizer('BasicImportAuthorizer', basicAuthorizer, {
-    //   resultsCacheTtl: cdk.Duration.seconds(0),
-    // });
+    const basicImportAuthorizer = new HttpLambdaAuthorizer('BasicImportAuthorizer', basicAuthorizer, {
+      responseTypes: [HttpLambdaResponseType.IAM],
+      resultsCacheTtl: cdk.Duration.seconds(0),
+    });
 
     // Add route for import service API
     importApi.addRoutes({
       path: API_PATHS.Import,
       methods: [apigw.HttpMethod.GET],
       integration: importProductsFileIntegration,
-      // authorizer: basicImportAuthorizer,
+      authorizer: basicImportAuthorizer,
     });
 
     // Create import file parser lambda function

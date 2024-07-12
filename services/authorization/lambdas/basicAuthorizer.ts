@@ -1,14 +1,22 @@
-import { CustomError } from "/opt/utils";
-import type { APIGatewayAuthorizerResult, APIGatewayTokenAuthorizerEvent } from "aws-lambda";
+import type { APIGatewayAuthorizerResult, APIGatewayRequestAuthorizerEvent, Handler } from "aws-lambda";
 
-export const handler = async (event: APIGatewayTokenAuthorizerEvent): Promise<APIGatewayAuthorizerResult | CustomError> => {
+interface IEvent extends APIGatewayRequestAuthorizerEvent {
+  authorizationToken: string;
+}
+
+export const handler: Handler<IEvent> = async (event, _, cb) => {
   console.log('Event: ', event);
 
   const { type, authorizationToken, methodArn } = event;
 
-  if (type !== 'TOKEN') {
+  if (type !== 'REQUEST') {
     console.log('Token type not provided.');
-    return new CustomError('Unauthorized', 401);
+    cb('Unauthorized');
+  }
+
+  if (authorizationToken === 'null') {
+    console.log('Token not provided.');
+    cb('Unauthorized');
   }
 
   try {
@@ -17,7 +25,7 @@ export const handler = async (event: APIGatewayTokenAuthorizerEvent): Promise<AP
 
     console.log(`Username: ${username}, Password: ${password}`);
 
-    const effect = process.env[username] === password ? 'Allow' : 'Deny';
+    const effect = !process.env[username] || process.env[username] !== password ? 'Deny' : 'Allow';
 
     console.log(`Policy effect: ${effect}`);
 
@@ -35,9 +43,9 @@ export const handler = async (event: APIGatewayTokenAuthorizerEvent): Promise<AP
       }
     };
 
-    return policy;
+    cb(null, policy);
   } catch (error) {
     console.error(error);
-    return new CustomError('Unauthorized', 401);
+    cb('Unauthorized');
   }
 };
