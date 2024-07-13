@@ -1,7 +1,7 @@
 import { mockClient } from "aws-sdk-client-mock";
 import { DynamoDBDocumentClient, BatchExecuteStatementCommand, ExecuteStatementCommand } from "@aws-sdk/lib-dynamodb";
 
-import { handler } from "@/services/products/getProductsList";
+import { handler } from "@services/products/lambdas/getProductsList";
 import { products } from "@/mock/products";
 import { generateStocksData } from "@/utils/generateStocksData";
 import { TableNames } from "@/types";

@@ -1,4 +1,4 @@
-import { handler } from "@/services/products/createProduct";
+import { handler } from "@services/products/lambdas/createProduct";
 import { httpEventMock } from "@/mock/httpEventMock";
 import * as utils from "@/layers/utils";
 import { TableNames, type HttpEventRequest } from "@/types";

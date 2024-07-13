@@ -2,15 +2,16 @@ import path = require('node:path');
 
 export const ORIGINS = ['https://d3ffym298mm09d.cloudfront.net', 'http://localhost:3000'];
 
-export const ALLOWED_HEADERS = ['Content-Type', 'Authorization', 'Access-Control-Allow-Methods', 'Access-Control-Allow-Origin'];
+export const ALLOWED_HEADERS = ['Content-Type', 'Authorization', 'Access-Control-Allow-Methods', 'Access-Control-Allow-Origin', 'Access-Control-Request-Headers', 'Access-Control-Request-Method'];
 
 export const LAYERS_PATH = path.join('src', 'layers');
 
-const SERVICES_PATH_BASE = path.join('src', 'services');
+const SERVICES = path.join('services');
 
 export const SERVICES_PATH = {
-  Products: path.join(SERVICES_PATH_BASE, 'products'),
-  Import: path.join(SERVICES_PATH_BASE, 'import'),
+  Products: path.join(SERVICES, 'products'),
+  Import: path.join(SERVICES, 'import'),
+  Authorization: path.join(SERVICES, 'authorization'),
 };
 
 export const API_PATHS = {

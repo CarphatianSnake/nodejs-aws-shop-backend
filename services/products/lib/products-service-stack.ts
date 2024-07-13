@@ -14,8 +14,6 @@ import { ALLOWED_HEADERS, LAYERS_PATH, ORIGINS, SERVICES_PATH, API_PATHS } from 
 import path = require('node:path');
 
 export class ProductsServiceStack extends cdk.Stack {
-  public readonly CatalogItemsQueue: sqs.Queue;
-
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
@@ -50,7 +48,7 @@ export class ProductsServiceStack extends cdk.Stack {
     // Create lambda functions
     const getProducts = new NodejsFunction(this, 'GetProductsHandler', {
       runtime: lambda.Runtime.NODEJS_20_X,
-      entry: path.join(SERVICES_PATH.Products, 'getProductsList.ts'),
+      entry: path.join(SERVICES_PATH.Products, 'lambdas', 'getProductsList.ts'),
       layers: [utilsLayer, zodLayer],
       initialPolicy: [new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
@@ -62,7 +60,7 @@ export class ProductsServiceStack extends cdk.Stack {
 
     const getProductById = new NodejsFunction(this, 'GetProductByIdHandler', {
       runtime: lambda.Runtime.NODEJS_20_X,
-      entry: path.join(SERVICES_PATH.Products, 'getProductById.ts'),
+      entry: path.join(SERVICES_PATH.Products, 'lambdas', 'getProductById.ts'),
       layers: [utilsLayer, zodLayer],
       initialPolicy: [new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
@@ -74,7 +72,7 @@ export class ProductsServiceStack extends cdk.Stack {
 
     const createProduct = new NodejsFunction(this, 'CreateProductHandler', {
       runtime: lambda.Runtime.NODEJS_20_X,
-      entry: path.join(SERVICES_PATH.Products, 'createProduct.ts'),
+      entry: path.join(SERVICES_PATH.Products, 'lambdas', 'createProduct.ts'),
       layers: [utilsLayer, zodLayer, uuidLayer],
       initialPolicy: [new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
@@ -128,7 +126,17 @@ export class ProductsServiceStack extends cdk.Stack {
     const catalogItemsQueue = new sqs.Queue(this, 'ImportProductsQueue', {
       queueName: 'import-products-queue-carp',
     });
-    this.CatalogItemsQueue = catalogItemsQueue;
+
+    // Export SQS Import Products Queue Values
+    new cdk.CfnOutput(this, 'CatalogItemsQueueArn', {
+      value: catalogItemsQueue.queueArn,
+      exportName: 'catalogItemsQueueArn',
+    });
+
+    new cdk.CfnOutput(this, 'CatalogItemsQueueURL', {
+      value: catalogItemsQueue.queueUrl,
+      exportName: 'catalogItemsQueueUrl',
+    });
 
     // Create SQS event source for catalog batch process lambda function
     const catalogBatchProcessEventSource = new lambdaEventSource.SqsEventSource(catalogItemsQueue, {
@@ -152,7 +160,7 @@ export class ProductsServiceStack extends cdk.Stack {
     // Create catalog batch process lambda function
     const catalogBatchProcess = new NodejsFunction(this, 'CatalogBatchProcessHandler', {
       runtime: lambda.Runtime.NODEJS_20_X,
-      entry: path.join(SERVICES_PATH.Products, 'catalogBatchProcess.ts'),
+      entry: path.join(SERVICES_PATH.Products, 'lambdas', 'catalogBatchProcess.ts'),
       layers: [utilsLayer, uuidLayer, zodLayer],
       initialPolicy: [new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,

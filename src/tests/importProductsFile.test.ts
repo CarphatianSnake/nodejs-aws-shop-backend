@@ -1,6 +1,6 @@
 import { mockClient } from "aws-sdk-client-mock";
 import { S3Client } from "@aws-sdk/client-s3";
-import { handler } from "@/services/import/importProductsFile";
+import { handler } from "@services/import/lambdas/importProductsFile";
 import { httpEventMock } from "@/mock/httpEventMock";
 import type { HttpEventRequest } from "@/types";
 

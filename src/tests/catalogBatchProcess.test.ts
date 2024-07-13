@@ -1,6 +1,6 @@
 import { mockClient } from "aws-sdk-client-mock";
 import { PublishCommand, SNSClient } from "@aws-sdk/client-sns";
-import { handler } from "@/services/products/catalogBatchProcess";
+import { handler } from "@services/products/lambdas/catalogBatchProcess";
 import { sqsRecordMock } from "@/mock/sqsRecordMock";
 import 'aws-sdk-client-mock-jest';
 import * as utils from "@/layers/utils";

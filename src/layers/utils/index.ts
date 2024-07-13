@@ -43,11 +43,13 @@ export const transactProduct = async ({ product, region, tables }: TransactProps
   const productStatement = {
     Statement: `INSERT INTO "${tables.PRODUCTS_TABLE}" VALUE {
       'id': '${product.id}',
-      'title': '${product.title}',
-      'description': '${product.description}',
+      'title': '${product.title.replace(/'/g, "''")}',
+      'description': '${product.description?.replace(/'/g, "''")}',
       'price': ${product.price}
     }`,
   };
+
+  console.log('Product statement:', productStatement);
 
   const stockStatement = {
     Statement: `INSERT INTO "${tables.STOCKS_TABLE}" VALUE {
@@ -55,6 +57,8 @@ export const transactProduct = async ({ product, region, tables }: TransactProps
       'count': ${product.count}
     }`,
   };
+
+  console.log('Stock statement:', stockStatement);
 
   await documentClient.send(new ExecuteTransactionCommand({
     TransactStatements: [
