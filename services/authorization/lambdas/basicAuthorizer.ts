@@ -1,15 +1,11 @@
-import type { APIGatewayAuthorizerResult, APIGatewayRequestAuthorizerEvent, Handler } from "aws-lambda";
+import type { APIGatewayAuthorizerResult, APIGatewayRequestAuthorizerEvent } from "aws-lambda";
 
-export const handler: Handler<APIGatewayRequestAuthorizerEvent> = async (event, _, cb) => {
+export const handler = async (event: APIGatewayRequestAuthorizerEvent): Promise<APIGatewayAuthorizerResult> => {
   console.log('Event: ', event);
 
-  const { type, headers, methodArn } = event;
+  const { headers, methodArn } = event;
 
   try {
-    if (type !== 'REQUEST') {
-      throw new Error('Token type is not provided');
-    }
-
     if (!headers?.authorization) {
       throw new Error('Token is not provided');
     }
@@ -23,7 +19,7 @@ export const handler: Handler<APIGatewayRequestAuthorizerEvent> = async (event, 
 
     console.log(`Policy effect: ${effect}`);
 
-    const policy: APIGatewayAuthorizerResult = {
+    return {
       principalId: credentials,
       policyDocument: {
         Version: '2012-10-17',
@@ -36,10 +32,8 @@ export const handler: Handler<APIGatewayRequestAuthorizerEvent> = async (event, 
         ],
       }
     };
-
-    cb(null, policy);
   } catch (error) {
     console.error(error);
-    cb('Unauthorized');
+    throw new Error('Unauthorized');
   }
 };
