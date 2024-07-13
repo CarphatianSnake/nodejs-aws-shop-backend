@@ -16,7 +16,7 @@ export class AuthorizationServiceStack extends cdk.Stack {
     });
 
     // Create basic authorization service lambda
-    const basicAuthorization = new NodejsFunction(this, 'BasicAuthHandler', {
+    const basicAuthorizer = new NodejsFunction(this, 'BasicAuthHandler', {
       runtime: lambda.Runtime.NODEJS_20_X,
       entry: path.join(SERVICES_PATH.Authorization, 'lambdas', 'basicAuthorizer.ts'),
       layers: [utilsLayer],
@@ -27,7 +27,7 @@ export class AuthorizationServiceStack extends cdk.Stack {
 
     // Export basic authorization service lambda ARN
     new cdk.CfnOutput(this, 'BasicAuthArnOutput', {
-      value: basicAuthorization.functionArn,
+      value: basicAuthorizer.functionArn,
       exportName: 'basicAuthArn',
     })
   }
